@@ -5,6 +5,7 @@ mod executive;
 pub mod json_tests;
 #[allow(dead_code)]
 pub mod native;
+pub mod riscv;
 pub mod state;
 
 pub use err::Error;
