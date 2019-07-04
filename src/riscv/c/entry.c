@@ -1,11 +1,7 @@
-#include "sdk.h"
 #include "duktape.h"
+#include "sdk.h"
 
 duk_double_t dummy_get_now(void) {
-  /*
-   * Return a fixed time here as a dummy value since CKB does not support
-   * fetching current timestamp
-   */
   return -11504520000.0;
 }
 
@@ -44,10 +40,39 @@ static duk_ret_t duk_env_ret(duk_context *ctx) {
   void *ptr;
   duk_size_t sz;
   ptr = duk_get_buffer_data(ctx, -1, &sz);
+  duk_pop_n(ctx, 1);
+
   env_ret(ptr, sz);
   return 0;
 }
 
+static duk_ret_t duk_env_save(duk_context *ctx) {
+  void *v_ptr;
+  duk_size_t v_sz;
+  v_ptr = duk_get_buffer_data(ctx, -1, &v_sz);
+
+  void *k_ptr;
+  duk_size_t k_sz;
+  k_ptr = duk_get_buffer_data(ctx, -2,  &k_sz);
+
+  duk_pop_n(ctx, 2);
+
+  env_save(k_ptr, k_sz, v_ptr, v_sz);
+  return 0;
+}
+
+static duk_ret_t duk_env_load(duk_context *ctx) {
+  void *k_ptr;
+  duk_size_t k_sz;
+  k_ptr = duk_get_buffer_data(ctx, -1, &k_sz);
+
+  duk_pop_n(ctx, 1);
+
+  void *v_ptr = duk_push_buffer(ctx, 1024, 0);
+  env_load(k_ptr, k_sz, v_ptr, 1024);
+
+  return 1;
+}
 
 // typedef int (*load_hash_function)(void *, volatile uint64_t *, size_t);
 // typedef int (*load_function)(void *, volatile uint64_t *, size_t, size_t,
@@ -235,6 +260,12 @@ void env_init(duk_context *ctx) {
 
   duk_push_c_function(ctx, duk_env_ret, 1);
   duk_put_prop_string(ctx, -2, "ret");
+
+  duk_push_c_function(ctx, duk_env_save, 2);
+  duk_put_prop_string(ctx, -2, "save");
+
+  duk_push_c_function(ctx, duk_env_load, 1);
+  duk_put_prop_string(ctx, -2, "load");
 
 //   duk_push_c_function(ctx, duk_ckb_load_tx_hash, 0);
 //   duk_put_prop_string(ctx, -2, "load_tx_hash");
