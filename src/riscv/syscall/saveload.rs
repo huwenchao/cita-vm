@@ -6,7 +6,7 @@ use ckb_vm::instructions::Register;
 use ckb_vm::Memory;
 use ethereum_types::{Address, H256, U256};
 
-use crate::common::hash::summary;
+use crate::common::hash;
 use crate::evm::DataProvider;
 use crate::riscv::syscall::common::get_arr;
 use crate::riscv::syscall::convention::{SYSCODE_LOAD, SYSCODE_SAVE};
@@ -27,7 +27,7 @@ use crate::riscv::syscall::convention::{SYSCODE_LOAD, SYSCODE_SAVE};
 fn gen_mapped(k: &[u8], v: &[u8]) -> Vec<(Vec<u8>, Vec<u8>)> {
     let mut r: Vec<(Vec<u8>, Vec<u8>)> = Vec::new();
 
-    let k_hash = tiny_keccak::keccak256(k).to_vec();
+    let k_hash = hash::summary(k).to_vec();
     let k_u256 = U256::from(&k_hash[..]);
 
     let v_size = v.len();
@@ -107,7 +107,7 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallStorage {
             let v_size = machine.registers()[ckb_vm::registers::A3].to_usize();
             let k = get_arr(machine, k_addr, k_size)?;
 
-            let k_hash = summary(&k[..]).to_vec();
+            let k_hash = hash::summary(&k[..]).to_vec();
             let k_u256 = U256::from(&k_hash[..]);
             let size_h256 = self.data.borrow().get_storage(&self.address, &H256::from(&k_hash[..]));
             let size_u256 = U256::from(size_h256);
