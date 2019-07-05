@@ -19,9 +19,10 @@ int main(int argc, char* argv[]) {
 
   env_debug("Testing: load");
   uint8_t buffer_load_v[20];
-  env_load(&buffer_save_k[0], strlen(buffer_save_k), &buffer_load_v[0], 20);
+  size_t sz;
+  env_load(&buffer_save_k[0], strlen(buffer_save_k), &buffer_load_v[0], 20, &sz);
   const char* s = buffer_load_v;
-  if (strcmp("Test: save_v", s) == 0) {
+  if ((strcmp("Test: save_v", s) == 0) && (sz == 12)) {
     env_debug("Test[v]: load");
   } else {
     env_debug("Test[x]: load");

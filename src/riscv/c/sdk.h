@@ -75,7 +75,7 @@ int env_save(uint8_t *k, size_t k_size, uint8_t *v, size_t v_size)
 //   v_size: size of the v buffer.
 // Return:
 //   code: 0(success), 1(key not found)
-int env_load(uint8_t *k, size_t k_size, uint8_t *v, size_t v_size)
+int env_load(uint8_t *k, size_t k_size, uint8_t *v, size_t v_size, size_t *r_size)
 {
-    return syscall(SYSCODE_LOAD, k, k_size, v, v_size, 0, 0);
+    return syscall(SYSCODE_LOAD, k, k_size, v, v_size, r_size, 0);
 }

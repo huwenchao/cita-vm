@@ -1,5 +1,6 @@
 // Provides the ability to interact with state storage.
 use std::cell::RefCell;
+use std::cmp;
 use std::rc::Rc;
 
 use ckb_vm::instructions::Register;
@@ -105,6 +106,7 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallStorage {
             let k_size = machine.registers()[ckb_vm::registers::A1].to_usize();
             let v_addr = machine.registers()[ckb_vm::registers::A2].to_usize();
             let v_size = machine.registers()[ckb_vm::registers::A3].to_usize();
+            let r_addr = machine.registers()[ckb_vm::registers::A4].to_usize();
             let k = get_arr(machine, k_addr, k_size)?;
 
             let k_hash = hash::summary(&k[..]).to_vec();
@@ -134,6 +136,9 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallStorage {
             r.resize(v_size, 0u8);
 
             machine.memory_mut().store_bytes(v_addr, &r)?;
+            machine
+                .memory_mut()
+                .store_bytes(r_addr, &cmp::min(size_u256.as_u64() as usize, v_size).to_le_bytes()[..])?;
             machine.set_register(ckb_vm::registers::A0, Mac::REG::from_u8(0));
             return Ok(true);
         }
