@@ -68,8 +68,11 @@ static duk_ret_t duk_env_load(duk_context *ctx) {
 
   duk_pop_n(ctx, 1);
 
-  void *v_ptr = duk_push_buffer(ctx, 1024, 0);
-  env_load(k_ptr, k_sz, v_ptr, 1024);
+  void *v_ptr = duk_push_buffer(ctx, 4096, 1);
+  duk_size_t r_size;
+  env_load(k_ptr, k_sz, v_ptr, 4096, &r_size);
+
+  duk_resize_buffer(ctx, -1, r_size);
 
   return 1;
 }
