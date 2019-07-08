@@ -37,5 +37,18 @@ int main(int argc, char* argv[]) {
       env_debug("Test[x]: address");
   }
 
+  env_debug("Testing: balance");
+  uint8_t account1[20] = [
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+  ];
+  uint8_t v[32];
+  env_balance(&account1[0], &v[0]);
+  if (v[31] == 10) {
+    env_debug("Test[v]: balance");
+  } else {
+    env_debug("Test[x]: balance");
+  }
+
   return 0;
 }

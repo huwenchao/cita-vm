@@ -13,3 +13,4 @@ pub use executive::{
     exec, exec_static, BlockDataProvider, BlockDataProviderMock, Config, CreateKind, DataProvider, Executive, Store,
     Transaction,
 };
+pub use state::State;
