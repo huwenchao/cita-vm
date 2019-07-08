@@ -78,8 +78,8 @@ static duk_ret_t duk_env_load(duk_context *ctx) {
 }
 
 static duk_ret_t duk_env_address(duk_context *ctx) {
-    void *ptr = duk_push_buffer(ctx, 20);
-    env_address(ptr)
+    void *ptr = duk_push_buffer(ctx, 20, 0);
+    env_address(ptr);
     return 1;
 }
 

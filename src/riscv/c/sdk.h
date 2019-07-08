@@ -86,7 +86,7 @@ int env_load(uint8_t *k, size_t k_size, uint8_t *v, size_t v_size, size_t *r_siz
 //   addr: a pointer to a buffer in VM memory space denoting where the address located at.
 // Return:
 //   code: 0(success)
-int get_address(uint8_t *addr)
+int env_address(uint8_t *addr)
 {
     return syscall(SYSCODE_ADDRESS, addr, 0, 0, 0, 0, 0);
 }

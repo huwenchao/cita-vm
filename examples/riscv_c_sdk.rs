@@ -20,6 +20,9 @@ fn main() {
     let mut vm_params = cita_vm::evm::InterpreterParams::default();
     vm_params.origin = ethereum_types::Address::from("0x0000000000000000000000000000000000000001");
     vm_params.address = vm_params.origin;
+    
+    // Initialize context
+    let vm_context = cita_vm::evm::Context::default();
 
     // Initialize storage
     let state = Rc::new(RefCell::new(cita_vm::evm::extmock::DataProviderMock::default()));
@@ -29,6 +32,10 @@ fn main() {
             .syscall(Box::new(cita_vm::riscv::SyscallDebug::new(
                 "riscv_debug:",
                 std::io::stdout(),
+            )))
+            .syscall(Box::new(cita_vm::riscv::SyscallEnvironment::new(
+                vm_context.clone(),
+                vm_params.clone(),
             )))
             .syscall(Box::new(cita_vm::riscv::SyscallRet::new(ret_data.clone())))
             .syscall(Box::new(cita_vm::riscv::SyscallStorage::new(

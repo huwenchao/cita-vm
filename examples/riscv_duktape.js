@@ -17,3 +17,10 @@ if (r.subarray(0, 5)[4] == buffer_v[4]) {
 } else {
     env.debug('Test[x]: env.save/env.load')
 }
+
+var addr = env.address()
+if (addr[19] == 0x01) {
+    env.debug('Test[v]: env.address')
+} else {
+    env.debug('Test[x]: env.address')
+}
