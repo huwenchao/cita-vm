@@ -83,6 +83,17 @@ static duk_ret_t duk_env_address(duk_context *ctx) {
     return 1;
 }
 
+static duk_ret_t duk_env_balance(duk_context *ctx) {
+    void *addr_ptr;
+    addr_ptr = duk_get_buffer_data(ctx, -1, NULL);
+
+    void *v_ptr = duk_push_buffer(ctx, 32, 0);
+
+    env_balance(addr_ptr, v_ptr);
+
+    return 1;
+}
+
 // typedef int (*load_hash_function)(void *, volatile uint64_t *, size_t);
 // typedef int (*load_function)(void *, volatile uint64_t *, size_t, size_t,
 //                              size_t);

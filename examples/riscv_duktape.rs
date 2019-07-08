@@ -34,7 +34,11 @@ fn main() {
     let mut machine =
         ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>>::default()
             .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
-            .syscall(Box::new(cita_vm::riscv::SyscallEnvironment::new(vm_context.clone(), vm_params.clone())))
+            .syscall(Box::new(cita_vm::riscv::SyscallEnvironment::new(
+                vm_context.clone(),
+                vm_params.clone(),
+                state.clone(),
+            )))
             .syscall(Box::new(cita_vm::riscv::SyscallRet::new(ret_data.clone())))
             .syscall(Box::new(cita_vm::riscv::SyscallStorage::new(
                 vm_params.address.clone(),
