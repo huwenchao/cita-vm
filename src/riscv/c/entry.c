@@ -77,6 +77,12 @@ static duk_ret_t duk_env_load(duk_context *ctx) {
   return 1;
 }
 
+static duk_ret_t duk_env_address(duk_context *ctx) {
+    void *ptr = duk_push_buffer(ctx, 20);
+    env_address(ptr)
+    return 1;
+}
+
 // typedef int (*load_hash_function)(void *, volatile uint64_t *, size_t);
 // typedef int (*load_function)(void *, volatile uint64_t *, size_t, size_t,
 //                              size_t);
@@ -269,6 +275,9 @@ void env_init(duk_context *ctx) {
 
   duk_push_c_function(ctx, duk_env_load, 1);
   duk_put_prop_string(ctx, -2, "load");
+
+  duk_push_c_function(ctx, duk_env_address, 0);
+  duk_put_prop_string(ctx, -2, "address");
 
 //   duk_push_c_function(ctx, duk_ckb_load_tx_hash, 0);
 //   duk_put_prop_string(ctx, -2, "load_tx_hash");

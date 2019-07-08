@@ -28,5 +28,14 @@ int main(int argc, char* argv[]) {
     env_debug("Test[x]: load");
   }
 
+  env_debug("Testing: address");
+  uint8_t addr[20];
+  env_address(&addr[0]);
+  if addr[19] == 0x01 {
+      env_debug("Test[v]: address")
+  } else {
+      env_debug("Test[x]: address")
+  }
+
   return 0;
 }

@@ -25,9 +25,10 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 #define SYSCODE_RET 2180
 #define SYSCODE_SAVE 2181
 #define SYSCODE_LOAD 2182
+#define SYSCODE_ADDRESS 2190
 
 
-// Function debug accepts a string that contains the text to be written to stdout(It depends on the VM).
+// Function env_debug accepts a string that contains the text to be written to stdout(It depends on the VM).
 // Params:
 //   format: same as the standard C function `printf()`
 // Return:
@@ -53,7 +54,7 @@ int env_ret(uint8_t *data, size_t size)
     return syscall(SYSCODE_RET, data, size, 0, 0, 0, 0);
 }
 
-// Function save stores any bytes with it's keys into the global SRAM.
+// Function env_save stores any bytes with it's keys into the global SRAM.
 // Params:
 //   k: a pointer to a buffer in VM memory space denoting where the key located at.
 //   k_size: size of the k buffer.
@@ -67,7 +68,7 @@ int env_save(uint8_t *k, size_t k_size, uint8_t *v, size_t v_size)
 }
 
 
-// Function load loads bytes with given key from the global SRAM.
+// Function env_load loads bytes with given key from the global SRAM.
 // Params:
 //   k: a pointer to a buffer in VM memory space denoting where the key located at.
 //   k_size: size of the k buffer.
@@ -78,4 +79,14 @@ int env_save(uint8_t *k, size_t k_size, uint8_t *v, size_t v_size)
 int env_load(uint8_t *k, size_t k_size, uint8_t *v, size_t v_size, size_t *r_size)
 {
     return syscall(SYSCODE_LOAD, k, k_size, v, v_size, r_size, 0);
+}
+
+// Function env_address loads current address from context.
+// Params:
+//   addr: a pointer to a buffer in VM memory space denoting where the address located at.
+// Return:
+//   code: 0(success)
+int get_address(uint8_t *addr)
+{
+    return syscall(SYSCODE_ADDRESS, addr, 0, 0, 0, 0, 0);
 }
