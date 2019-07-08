@@ -18,9 +18,22 @@ if (r.subarray(0, 5)[4] == buffer_v[4]) {
     env.debug('Test[x]: env.save/env.load')
 }
 
+env.debug('Testing: env.address')
 var addr = env.address()
 if (addr[19] == 0x01) {
     env.debug('Test[v]: env.address')
 } else {
     env.debug('Test[x]: env.address')
+}
+
+env.debug('Testing: env.balance')
+var acc1 = new Buffer([
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
+]);
+var v = env.balance(acc1)
+if (v[31] == 10) {
+    env.debug('Test[v]: env.balance')
+} else {
+    env.debug('Test[x]: env.balance')
 }

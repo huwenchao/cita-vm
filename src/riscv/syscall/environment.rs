@@ -42,11 +42,11 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallEnvironment {
                 let v_addr = machine.registers()[ckb_vm::registers::A1].to_usize();
 
                 let addr_byte = get_arr(machine, addr_addr, 20)?;
-                let addr_u256 = ethereum_types::Address::from(&addr_byte[..]);
+                let addr_h160 = ethereum_types::Address::from(&addr_byte[..]);
 
-                let v_u256 = self.data.borrow().get_balance(&addr_u256);
-                let mut v_byte: Vec<u8> = vec![];
-                v_u256.to_big_endian(&mut v_byte[..]);
+                let v_u256 = self.data.borrow().get_balance(&addr_h160);
+                let mut v_byte = [0x00u8; 32];
+                v_u256.to_big_endian(&mut v_byte);
                 machine.memory_mut().store_bytes(v_addr, &v_byte)?;
                 Ok(true)
             }

@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use std::io::Read;
 use std::rc::Rc;
 
@@ -30,6 +31,16 @@ fn main() {
 
     // Initialize storage
     let state = Rc::new(RefCell::new(cita_vm::evm::extmock::DataProviderMock::default()));
+    let acc1 = ethereum_types::Address::from("0x0000000000000000000000000000000000000001");
+    state.borrow_mut().db.insert(
+        acc1,
+        cita_vm::evm::extmock::Account {
+            balance: ethereum_types::U256::from(10),
+            code: vec![],
+            nonce: ethereum_types::U256::from(0),
+            storage: BTreeMap::new(),
+        },
+    );
 
     let mut machine =
         ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>>::default()

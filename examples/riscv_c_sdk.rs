@@ -1,11 +1,11 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
+use std::io::Read;
+use std::rc::Rc;
 
 use bytes::Bytes;
 use cita_vm;
 use ckb_vm;
-use std::io::Read;
-use std::rc::Rc;
 
 fn main() {
     // Load binary
@@ -41,7 +41,7 @@ fn main() {
     let mut machine =
         ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>>::default()
             .syscall(Box::new(cita_vm::riscv::SyscallDebug::new(
-                "riscv_debug:",
+                "riscv:",
                 std::io::stdout(),
             )))
             .syscall(Box::new(cita_vm::riscv::SyscallEnvironment::new(
