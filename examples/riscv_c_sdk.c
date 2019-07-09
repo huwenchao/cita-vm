@@ -51,9 +51,9 @@ int main(int argc, char* argv[]) {
   }
 
   env_debug("Testing: origin");
-  uint8_t addr[20];
-  env_origin(&addr[0]);
-  if (addr[19] == 0x02) {
+  uint8_t origin[20];
+  env_origin(&origin[0]);
+  if (origin[19] == 0x02) {
       env_debug("Test[v]: origin");
   } else {
       env_debug("Test[x]: origin");
