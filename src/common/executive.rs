@@ -4,61 +4,9 @@ use std::sync::Arc;
 use cita_trie::DB;
 use ethereum_types::{Address, H256, U256};
 use hashbrown::{HashMap, HashSet};
-use log::debug;
 
 use crate::evm;
 use crate::state::State;
-
-#[derive(Clone, Debug, Default)]
-pub struct Context {
-    pub gas_limit: u64,
-    pub coinbase: Address,
-    pub number: U256,
-    pub timestamp: u64,
-    pub difficulty: U256,
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct Contract {
-    pub code_address: Address,
-    pub code_data: Vec<u8>,
-}
-
-// Log is the data struct for LOG0...LOG4.
-// The members are "Address: Address, Topics: Vec<H256>, Body: Vec<u8>"
-#[derive(Clone, Debug)]
-pub struct Log(pub Address, pub Vec<H256>, pub Vec<u8>);
-
-#[derive(Clone, Debug)]
-pub enum InterpreterResult {
-    // Return data, remain gas, logs.
-    Normal(Vec<u8>, u64, Vec<Log>),
-    // Return data, remain gas
-    Revert(Vec<u8>, u64),
-    // Return data, remain gas, logs, contract address
-    Create(Vec<u8>, u64, Vec<Log>, Address),
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct InterpreterParams {
-    pub origin: Address,   // Who send the transaction
-    pub sender: Address,   // Who send the call
-    pub receiver: Address, // Who receive the transaction or call
-    pub address: Address,  // Which storage used
-
-    pub value: U256,
-    pub input: Vec<u8>,
-    pub nonce: U256,
-    pub gas_limit: u64,
-    pub gas_price: U256,
-
-    pub read_only: bool,
-    pub contract: Contract,
-    pub extra: H256,
-    pub is_create: bool,
-    pub disable_transfer_value: bool,
-    pub depth: u64,
-}
 
 /// BlockDataProvider provides functions to get block's hash from chain.
 ///
@@ -89,6 +37,75 @@ impl BlockDataProvider for BlockDataProviderMock {
     }
 }
 
+#[derive(Clone, Debug, Default)]
+pub struct Context {
+    pub gas_limit: u64,
+    pub coinbase: Address,
+    pub number: U256,
+    pub timestamp: u64,
+    pub difficulty: U256,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Contract {
+    pub code_address: Address,
+    pub code_data: Vec<u8>,
+}
+
+/// An implemention for evm::DataProvider
+pub struct DataProvider<B> {
+    pub block_provider: Arc<BlockDataProvider>,
+    pub state_provider: Arc<RefCell<State<B>>>,
+    pub store: Arc<RefCell<Store>>,
+}
+
+impl<B: DB> DataProvider<B> {
+    /// Create a new instance. It's obvious.
+    pub fn new(b: Arc<BlockDataProvider>, s: Arc<RefCell<State<B>>>, store: Arc<RefCell<Store>>) -> Self {
+        DataProvider {
+            block_provider: b,
+            state_provider: s,
+            store,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct InterpreterParams {
+    pub origin: Address,   // Who send the transaction
+    pub sender: Address,   // Who send the call
+    pub receiver: Address, // Who receive the transaction or call
+    pub address: Address,  // Which storage used
+
+    pub value: U256,
+    pub input: Vec<u8>,
+    pub nonce: U256,
+    pub gas_limit: u64,
+    pub gas_price: U256,
+
+    pub read_only: bool,
+    pub contract: Contract,
+    pub extra: H256,
+    pub is_create: bool,
+    pub disable_transfer_value: bool,
+    pub depth: u64,
+}
+
+#[derive(Clone, Debug)]
+pub enum InterpreterResult {
+    // Return data, remain gas, logs.
+    Normal(Vec<u8>, u64, Vec<Log>),
+    // Return data, remain gas
+    Revert(Vec<u8>, u64),
+    // Return data, remain gas, logs, contract address
+    Create(Vec<u8>, u64, Vec<Log>, Address),
+}
+
+// Log is the data struct for LOG0...LOG4.
+// The members are "Address: Address, Topics: Vec<H256>, Body: Vec<u8>"
+#[derive(Clone, Debug)]
+pub struct Log(pub Address, pub Vec<H256>, pub Vec<u8>);
+
 /// Store storages shared datas.
 #[derive(Clone, Default)]
 pub struct Store {
@@ -118,25 +135,18 @@ impl Store {
     /// When a account has been read or write, record a log
     /// to prove that it has dose.
     pub fn used(&mut self, address: Address) {
-        debug!("store used={:?}", address);
         self.inused.insert(address);
     }
 }
 
-/// An implemention for evm::DataProvider
-pub struct DataProvider<B> {
-    pub block_provider: Arc<BlockDataProvider>,
-    pub state_provider: Arc<RefCell<State<B>>>,
-    pub store: Arc<RefCell<Store>>,
-}
-
-impl<B: DB> DataProvider<B> {
-    /// Create a new instance. It's obvious.
-    pub fn new(b: Arc<BlockDataProvider>, s: Arc<RefCell<State<B>>>, store: Arc<RefCell<Store>>) -> Self {
-        DataProvider {
-            block_provider: b,
-            state_provider: s,
-            store,
-        }
-    }
+/// Transaction struct.
+#[derive(Clone, Debug)]
+pub struct Transaction {
+    pub from: Address,
+    pub to: Option<Address>, // Some for call and None for create.
+    pub value: U256,
+    pub nonce: U256,
+    pub gas_limit: u64,
+    pub gas_price: U256,
+    pub input: Vec<u8>,
 }

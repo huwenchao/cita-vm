@@ -10,8 +10,8 @@ pub mod state;
 
 pub use common::executive::{
     BlockDataProvider, BlockDataProviderMock, Context, Contract, DataProvider, InterpreterParams, InterpreterResult,
-    Log, Store,
+    Log, Store, Transaction,
 };
 pub use err::Error;
-pub use executive::{exec, exec_static, Config, CreateKind, Executive, Transaction};
+pub use executive::{exec, exec_static, Config, CreateKind, Executive};
 pub use state::State;

@@ -9,7 +9,7 @@ use rlp::RlpStream;
 
 use crate::common;
 use crate::common::executive::{
-    BlockDataProvider, Context, Contract, DataProvider, InterpreterParams, InterpreterResult, Store,
+    BlockDataProvider, Context, Contract, DataProvider, InterpreterParams, InterpreterResult, Store, Transaction,
 };
 use crate::err;
 use crate::evm;
@@ -300,18 +300,6 @@ const G_TRANSACTION: u64 = 21000; // Paid for every transaction
 const G_CREATE: u64 = 32000; // Paid for contract create
 const G_CODE_DEPOSIT: u64 = 200; // Paid per byte for a CREATE operation to succeed in placing code into state.
 const MAX_CREATE_CODE_SIZE: u64 = 24576; // See: https://github.com/ethereum/EIPs/issues/659
-
-/// Transaction struct.
-#[derive(Clone, Debug)]
-pub struct Transaction {
-    pub from: Address,
-    pub to: Option<Address>, // Some for call and None for create.
-    pub value: U256,
-    pub nonce: U256,
-    pub gas_limit: u64,
-    pub gas_price: U256,
-    pub input: Vec<u8>,
-}
 
 /// Reinterpret tx to interpreter params.
 fn reinterpret_tx<B: DB + 'static>(
