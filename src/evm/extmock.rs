@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use ethereum_types::{Address, H256, U256};
 
 use crate::common;
+use crate::common::executive::{Context, InterpreterParams, InterpreterResult};
 use crate::evm::err;
 use crate::evm::ext;
 use crate::evm::interpreter;
@@ -99,15 +100,11 @@ impl ext::DataProvider for DataProviderMock {
         self.db.get(address).is_none()
     }
 
-    fn call(
-        &self,
-        opcode: opcodes::OpCode,
-        params: interpreter::InterpreterParams,
-    ) -> (Result<interpreter::InterpreterResult, err::Error>) {
+    fn call(&self, opcode: opcodes::OpCode, params: InterpreterParams) -> (Result<InterpreterResult, err::Error>) {
         match opcode {
             opcodes::OpCode::CALL => {
                 let mut it = interpreter::Interpreter::new(
-                    interpreter::Context::default(),
+                    Context::default(),
                     interpreter::InterpreterConf::default(),
                     Box::new(DataProviderMock::default()),
                     params,

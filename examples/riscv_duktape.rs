@@ -22,14 +22,14 @@ fn main() {
     let ret_data = Rc::new(RefCell::new(Vec::new()));
 
     // Initialize params
-    let mut vm_params = cita_vm::evm::InterpreterParams::default();
+    let mut vm_params = cita_vm::InterpreterParams::default();
     vm_params.address = ethereum_types::Address::from("0x0000000000000000000000000000000000000001");
     vm_params.origin = ethereum_types::Address::from("0x0000000000000000000000000000000000000002");
     vm_params.sender = ethereum_types::Address::from("0x0000000000000000000000000000000000000003");
     vm_params.value = ethereum_types::U256::from(5);
 
     // Initialize context
-    let mut vm_context = cita_vm::evm::Context::default();
+    let mut vm_context = cita_vm::Context::default();
     vm_context.number = ethereum_types::U256::from(6);
 
     // Initialize storage

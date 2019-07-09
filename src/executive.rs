@@ -3,13 +3,14 @@ use std::sync::Arc;
 
 use cita_trie::DB;
 use ethereum_types::{Address, H256, U256};
-use evm::InterpreterParams;
 use hashbrown::HashMap;
 use log::debug;
 use rlp::RlpStream;
 
 use crate::common;
-use crate::common::executive::{BlockDataProvider, DataProvider, Store};
+use crate::common::executive::{
+    BlockDataProvider, Context, Contract, DataProvider, InterpreterParams, InterpreterResult, Store,
+};
 use crate::err;
 use crate::evm;
 use crate::native;
@@ -136,7 +137,7 @@ fn call_pure<B: DB + 'static>(
     state_provider: Arc<RefCell<state::State<B>>>,
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
-) -> Result<evm::InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, err::Error> {
     let evm_context = store.borrow().evm_context.clone();
     let evm_cfg = store.borrow().evm_cfg.clone();
     let evm_params = request.clone();
@@ -157,7 +158,7 @@ fn call_pure<B: DB + 'static>(
         let r = c.run(&request.input);
         match r {
             Ok(ok) => {
-                return Ok(evm::InterpreterResult::Normal(ok, request.gas_limit - gas, vec![]));
+                return Ok(InterpreterResult::Normal(ok, request.gas_limit - gas, vec![]));
             }
             Err(e) => return Err(e),
         }
@@ -173,7 +174,7 @@ fn call<B: DB + 'static>(
     state_provider: Arc<RefCell<state::State<B>>>,
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
-) -> Result<evm::InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, err::Error> {
     debug!("call request={:?}", request);
     // Ensure balance
     if !request.disable_transfer_value && state_provider.borrow_mut().balance(&request.sender)? < request.value {
@@ -190,14 +191,14 @@ fn call<B: DB + 'static>(
     );
     debug!("call result={:?}", r);
     match r {
-        Ok(evm::InterpreterResult::Normal(output, gas_left, logs)) => {
+        Ok(InterpreterResult::Normal(output, gas_left, logs)) => {
             state_provider.borrow_mut().discard_checkpoint();
             store.borrow_mut().merge(store_son);
-            Ok(evm::InterpreterResult::Normal(output, gas_left, logs))
+            Ok(InterpreterResult::Normal(output, gas_left, logs))
         }
-        Ok(evm::InterpreterResult::Revert(output, gas_left)) => {
+        Ok(InterpreterResult::Revert(output, gas_left)) => {
             state_provider.borrow_mut().revert_checkpoint();
-            Ok(evm::InterpreterResult::Revert(output, gas_left))
+            Ok(InterpreterResult::Revert(output, gas_left))
         }
         Err(e) => {
             state_provider.borrow_mut().revert_checkpoint();
@@ -214,7 +215,7 @@ fn create<B: DB + 'static>(
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
     create_kind: CreateKind,
-) -> Result<evm::InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, err::Error> {
     debug!("create request={:?}", request);
     let address = match create_kind {
         CreateKind::FromAddressAndNonce => {
@@ -251,13 +252,13 @@ fn create<B: DB + 'static>(
     reqchan.receiver = address;
     reqchan.is_create = false;
     reqchan.input = vec![];
-    reqchan.contract = evm::Contract {
+    reqchan.contract = Contract {
         code_address: address,
         code_data: request.input.clone(),
     };
     let r = call(block_provider.clone(), state_provider.clone(), store.clone(), &reqchan);
     match r {
-        Ok(evm::InterpreterResult::Normal(output, gas_left, logs)) => {
+        Ok(InterpreterResult::Normal(output, gas_left, logs)) => {
             // Ensure code size
             if output.len() as u64 > MAX_CREATE_CODE_SIZE {
                 state_provider.borrow_mut().revert_checkpoint();
@@ -272,14 +273,14 @@ fn create<B: DB + 'static>(
             let gas_left = gas_left - gas_code_deposit;
             state_provider.borrow_mut().set_code(&address, output.clone())?;
             state_provider.borrow_mut().discard_checkpoint();
-            let r = Ok(evm::InterpreterResult::Create(output, gas_left, logs, address));
+            let r = Ok(InterpreterResult::Create(output, gas_left, logs, address));
             debug!("create result={:?}", r);
             debug!("create gas_left={:?}", gas_left);
             r
         }
-        Ok(evm::InterpreterResult::Revert(output, gas_left)) => {
+        Ok(InterpreterResult::Revert(output, gas_left)) => {
             state_provider.borrow_mut().revert_checkpoint();
-            let r = Ok(evm::InterpreterResult::Revert(output, gas_left));
+            let r = Ok(InterpreterResult::Revert(output, gas_left));
             debug!("create gas_left={:?}", gas_left);
             debug!("create result={:?}", r);
             r
@@ -317,14 +318,14 @@ fn reinterpret_tx<B: DB + 'static>(
     tx: Transaction,
     state_provider: Arc<RefCell<state::State<B>>>,
 ) -> InterpreterParams {
-    let mut request = evm::InterpreterParams::default();
+    let mut request = InterpreterParams::default();
     request.origin = tx.from;
     request.sender = tx.from;
     match tx.to {
         Some(data) => {
             request.receiver = data;
             request.address = data;
-            request.contract = evm::Contract {
+            request.contract = Contract {
                 code_address: data,
                 code_data: state_provider.borrow_mut().code(&data).unwrap_or_default(),
             };
@@ -345,10 +346,10 @@ fn reinterpret_tx<B: DB + 'static>(
 pub fn exec<B: DB + 'static>(
     block_provider: Arc<BlockDataProvider>,
     state_provider: Arc<RefCell<state::State<B>>>,
-    evm_context: evm::Context,
+    evm_context: Context,
     config: Config,
     tx: Transaction,
-) -> Result<evm::InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, err::Error> {
     let request = &reinterpret_tx(tx, state_provider.clone());
     // Ensure gas < block_gas_limit
     if config.block_gas_limit > G_TRANSACTION && request.gas_limit > config.block_gas_limit {
@@ -397,7 +398,7 @@ pub fn exec<B: DB + 'static>(
     // Finalize
     debug!("exec result={:?}", r);
     match r {
-        Ok(evm::InterpreterResult::Normal(output, gas_left, logs)) => {
+        Ok(InterpreterResult::Normal(output, gas_left, logs)) => {
             debug!("exec gas_left={:?}", gas_left);
             let refund = get_refund(store.clone(), &request, gas_left);
             debug!("exec refund={:?}", refund);
@@ -408,15 +409,15 @@ pub fn exec<B: DB + 'static>(
                 state_provider.borrow_mut().kill_contract(&e)
             }
             state_provider.borrow_mut().kill_garbage(&store.borrow().inused.clone());
-            Ok(evm::InterpreterResult::Normal(output, gas_left, logs))
+            Ok(InterpreterResult::Normal(output, gas_left, logs))
         }
-        Ok(evm::InterpreterResult::Revert(output, gas_left)) => {
+        Ok(InterpreterResult::Revert(output, gas_left)) => {
             debug!("exec gas_left={:?}", gas_left);
             clear(state_provider.clone(), store.clone(), &request, gas_left, 0)?;
             state_provider.borrow_mut().kill_garbage(&store.borrow().inused.clone());
-            Ok(evm::InterpreterResult::Revert(output, gas_left))
+            Ok(InterpreterResult::Revert(output, gas_left))
         }
-        Ok(evm::InterpreterResult::Create(output, gas_left, logs, addr)) => {
+        Ok(InterpreterResult::Create(output, gas_left, logs, addr)) => {
             debug!("exec gas_left={:?}", gas_left);
             let refund = get_refund(store.clone(), &request, gas_left);
             debug!("exec refund={:?}", refund);
@@ -425,7 +426,7 @@ pub fn exec<B: DB + 'static>(
                 state_provider.borrow_mut().kill_contract(&e)
             }
             state_provider.borrow_mut().kill_garbage(&store.borrow().inused.clone());
-            Ok(evm::InterpreterResult::Create(output, gas_left, logs, addr))
+            Ok(InterpreterResult::Create(output, gas_left, logs, addr))
         }
         Err(e) => {
             // When error, coinbase eats all gas as it's price, yummy.
@@ -447,10 +448,10 @@ pub fn exec<B: DB + 'static>(
 pub fn exec_static<B: DB + 'static>(
     block_provider: Arc<BlockDataProvider>,
     state_provider: Arc<RefCell<state::State<B>>>,
-    evm_context: evm::Context,
+    evm_context: Context,
     config: Config,
     tx: Transaction,
-) -> Result<evm::InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, err::Error> {
     if tx.to.is_none() {
         return Err(err::Error::CreateInStaticCall);
     }
@@ -479,7 +480,7 @@ impl<B: DB + 'static> Executive<B> {
         }
     }
 
-    pub fn exec(&self, evm_context: evm::Context, tx: Transaction) -> Result<evm::InterpreterResult, err::Error> {
+    pub fn exec(&self, evm_context: Context, tx: Transaction) -> Result<InterpreterResult, err::Error> {
         exec(
             self.block_provider.clone(),
             self.state_provider.clone(),
@@ -492,10 +493,10 @@ impl<B: DB + 'static> Executive<B> {
     pub fn exec_static(
         block_provider: Arc<BlockDataProvider>,
         state_provider: state::State<B>,
-        evm_context: evm::Context,
+        evm_context: Context,
         config: Config,
         tx: Transaction,
-    ) -> Result<evm::InterpreterResult, err::Error> {
+    ) -> Result<InterpreterResult, err::Error> {
         exec_static(
             block_provider,
             Arc::new(RefCell::new(state_provider)),
@@ -629,11 +630,7 @@ impl<B: DB + 'static> evm::DataProvider for DataProvider<B> {
         self.state_provider.borrow_mut().is_empty(address).unwrap_or(false)
     }
 
-    fn call(
-        &self,
-        opcode: evm::OpCode,
-        params: evm::InterpreterParams,
-    ) -> (Result<evm::InterpreterResult, evm::Error>) {
+    fn call(&self, opcode: evm::OpCode, params: InterpreterParams) -> (Result<InterpreterResult, evm::Error>) {
         match opcode {
             evm::OpCode::CALL | evm::OpCode::CALLCODE | evm::OpCode::DELEGATECALL | evm::OpCode::STATICCALL => {
                 self.store.borrow_mut().used(params.address);

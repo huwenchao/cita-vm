@@ -5,9 +5,8 @@ use std::rc::Rc;
 use ckb_vm::instructions::Register;
 use ckb_vm::memory::Memory;
 
-use crate::evm::Context;
+use crate::common::executive::{Context, InterpreterParams};
 use crate::evm::DataProvider;
-use crate::evm::InterpreterParams;
 use crate::riscv::syscall::common::get_arr;
 use crate::riscv::syscall::convention::{
     SYSCODE_ADDRESS, SYSCODE_BALANCE, SYSCODE_CALLER, SYSCODE_CALLVALUE, SYSCODE_NUMBER, SYSCODE_ORIGIN,

@@ -1,12 +1,13 @@
-use cita_vm::json_tests::common::*;
-use cita_vm::*;
-use env_logger;
-use state::State;
 use std::fs;
 use std::io;
 use std::io::Write;
 use std::sync::Arc;
 use std::thread;
+
+use cita_vm::json_tests::common::*;
+use cita_vm::*;
+use env_logger;
+use state::State;
 
 fn test_json_file(p: &str) {
     let f = fs::File::open(p).unwrap();
@@ -49,7 +50,7 @@ fn test_json_file(p: &str) {
             let str_value = data.transaction.value.clone()[*idx_value].clone();
             let str_data = data.transaction.data.clone()[*idx_data].clone();
 
-            let evm_context = evm::Context {
+            let evm_context = cita_vm::Context {
                 gas_limit: string_2_u256(str_block_gas.clone()).low_u64(),
                 coinbase: data.env.current_coinbase,
                 number: string_2_u256(data.env.current_number.clone()),

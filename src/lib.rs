@@ -8,7 +8,10 @@ pub mod native;
 pub mod riscv;
 pub mod state;
 
-pub use common::executive::{BlockDataProvider, BlockDataProviderMock, DataProvider, Store};
+pub use common::executive::{
+    BlockDataProvider, BlockDataProviderMock, Context, Contract, DataProvider, InterpreterParams, InterpreterResult,
+    Log, Store,
+};
 pub use err::Error;
 pub use executive::{exec, exec_static, Config, CreateKind, Executive, Transaction};
 pub use state::State;

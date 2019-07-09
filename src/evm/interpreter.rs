@@ -1,38 +1,15 @@
 use std::cmp;
 
-use ethereum_types::{Address, H256, U256, U512};
+use ethereum_types::{H256, U256, U512};
 use log::debug;
 
+use crate::common::executive::{Context, InterpreterParams, InterpreterResult, Log};
 use crate::evm::common;
 use crate::evm::err;
 use crate::evm::ext;
 use crate::evm::memory;
 use crate::evm::opcodes;
 use crate::evm::stack;
-
-#[derive(Clone, Debug, Default)]
-pub struct Context {
-    pub gas_limit: u64,
-    pub coinbase: Address,
-    pub number: U256,
-    pub timestamp: u64,
-    pub difficulty: U256,
-}
-
-// Log is the data struct for LOG0...LOG4.
-// The members are "Address: Address, Topics: Vec<H256>, Body: Vec<u8>"
-#[derive(Clone, Debug)]
-pub struct Log(pub Address, pub Vec<H256>, pub Vec<u8>);
-
-#[derive(Clone, Debug)]
-pub enum InterpreterResult {
-    // Return data, remain gas, logs.
-    Normal(Vec<u8>, u64, Vec<Log>),
-    // Return data, remain gas
-    Revert(Vec<u8>, u64),
-    // Return data, remain gas, logs, contract address
-    Create(Vec<u8>, u64, Vec<Log>, Address),
-}
 
 #[derive(Clone)]
 pub struct InterpreterConf {
@@ -125,33 +102,6 @@ impl Default for InterpreterConf {
             gas_ext_code_hash: 400,
         }
     }
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct Contract {
-    pub code_address: Address,
-    pub code_data: Vec<u8>,
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct InterpreterParams {
-    pub origin: Address,   // Who send the transaction
-    pub sender: Address,   // Who send the call
-    pub receiver: Address, // Who receive the transaction or call
-    pub address: Address,  // Which storage used
-
-    pub value: U256,
-    pub input: Vec<u8>,
-    pub nonce: U256,
-    pub gas_limit: u64,
-    pub gas_price: U256,
-
-    pub read_only: bool,
-    pub contract: Contract,
-    pub extra: H256,
-    pub is_create: bool,
-    pub disable_transfer_value: bool,
-    pub depth: u64,
 }
 
 pub struct Interpreter {
@@ -1230,6 +1180,8 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
     // The unit tests just carried from go-ethereum.
+    use ethereum_types::Address;
+
     use super::super::extmock;
     use super::*;
 

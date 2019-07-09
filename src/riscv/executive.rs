@@ -1,3 +1,4 @@
+use crate::common::executive::{Context, InterpreterParams};
 use crate::evm;
 use crate::riscv;
 
@@ -5,8 +6,8 @@ use ckb_vm::machine::SupportMachine;
 
 pub fn exec(
     max_cycles: u64,
-    vm_context: evm::Context,
-    vm_iparams: evm::InterpreterParams,
+    vm_context: Context,
+    vm_iparams: InterpreterParams,
     state: std::rc::Rc<std::cell::RefCell<evm::DataProvider>>,
     code: bytes::Bytes,
     args: Vec<bytes::Bytes>,

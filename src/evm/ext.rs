@@ -1,7 +1,7 @@
 use ethereum_types::{Address, H256, U256};
 
+use crate::common::executive::{InterpreterParams, InterpreterResult};
 use crate::evm::err;
-use crate::evm::interpreter;
 use crate::evm::opcodes;
 
 pub trait DataProvider {
@@ -35,9 +35,5 @@ pub trait DataProvider {
     //   OpCode::STATICCALL
     //   OpCode::CREATE
     //   OpCode::CREATE2
-    fn call(
-        &self,
-        opcode: opcodes::OpCode,
-        params: interpreter::InterpreterParams,
-    ) -> (Result<interpreter::InterpreterResult, err::Error>);
+    fn call(&self, opcode: opcodes::OpCode, params: InterpreterParams) -> (Result<InterpreterResult, err::Error>);
 }

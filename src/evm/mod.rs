@@ -9,5 +9,5 @@ mod stack;
 
 pub use err::Error;
 pub use ext::DataProvider;
-pub use interpreter::{Context, Contract, Interpreter, InterpreterConf, InterpreterParams, InterpreterResult, Log};
+pub use interpreter::{Interpreter, InterpreterConf};
 pub use opcodes::OpCode;

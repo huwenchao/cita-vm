@@ -27,7 +27,7 @@ fn test_state_misc00() {
 
     let block_data_provider: Arc<cita_vm::BlockDataProvider> = Arc::new(cita_vm::BlockDataProviderMock::default());
     let state_data_provider = Arc::new(RefCell::new(state));
-    let context = cita_vm::evm::Context::default();
+    let context = cita_vm::Context::default();
     let config = cita_vm::Config::default();
 
     let tx = cita_vm::Transaction {

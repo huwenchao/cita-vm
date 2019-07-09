@@ -31,7 +31,7 @@ fn test_solidity_simplestorage() {
 
     let block_data_provider: Arc<cita_vm::BlockDataProvider> = Arc::new(cita_vm::BlockDataProviderMock::default());
     let state_data_provider = Arc::new(RefCell::new(state));
-    let context = cita_vm::evm::Context::default();
+    let context = cita_vm::Context::default();
     let config = cita_vm::Config::default();
 
     // SimpleStorage.set(42)
@@ -72,7 +72,7 @@ fn test_solidity_simplestorage() {
     )
     .unwrap();
     match r {
-        cita_vm::evm::InterpreterResult::Normal(output, _, _) => {
+        cita_vm::InterpreterResult::Normal(output, _, _) => {
             assert_eq!(
                 output,
                 vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42]
@@ -101,7 +101,7 @@ fn test_solidity_simplestorage() {
     .unwrap();
     debug!("{:?}", r);
     match r {
-        cita_vm::evm::InterpreterResult::Normal(output, _, _) => {
+        cita_vm::InterpreterResult::Normal(output, _, _) => {
             assert_eq!(
                 output,
                 vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42]
@@ -257,7 +257,7 @@ fn test_solidity_erc20() {
                 00000000000000000000000000000000";
     let block_data_provider: Arc<cita_vm::BlockDataProvider> = Arc::new(cita_vm::BlockDataProviderMock::default());
     let state_data_provider = Arc::new(RefCell::new(state));
-    let context = cita_vm::evm::Context::default();
+    let context = cita_vm::Context::default();
     let config = cita_vm::Config::default();
 
     let tx = cita_vm::Transaction {
@@ -278,7 +278,7 @@ fn test_solidity_erc20() {
     )
     .unwrap();
     let contract = match r {
-        cita_vm::evm::InterpreterResult::Create(_, _, _, address) => address,
+        cita_vm::InterpreterResult::Create(_, _, _, address) => address,
         _ => panic!("error"),
     };
     println!("{:?}", contract);
@@ -302,7 +302,7 @@ fn test_solidity_erc20() {
     )
     .unwrap();
     match r {
-        cita_vm::evm::InterpreterResult::Normal(output, _, _) => assert_eq!(
+        cita_vm::InterpreterResult::Normal(output, _, _) => assert_eq!(
             output,
             vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100]
         ),
@@ -332,9 +332,9 @@ fn test_solidity_erc20() {
     .unwrap();
 
     match r {
-        cita_vm::evm::InterpreterResult::Normal(_, _, logs) => {
+        cita_vm::InterpreterResult::Normal(_, _, logs) => {
             assert_eq!(logs.len(), 1);
-            let cita_vm::evm::Log(addr, topics, data) = &logs[0];
+            let cita_vm::Log(addr, topics, data) = &logs[0];
             assert_eq!(addr, &contract);
             assert_eq!(
                 topics[1],
@@ -373,7 +373,7 @@ fn test_solidity_erc20() {
     )
     .unwrap();
     match r {
-        cita_vm::evm::InterpreterResult::Normal(output, _, _) => assert_eq!(
+        cita_vm::InterpreterResult::Normal(output, _, _) => assert_eq!(
             output,
             vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90]
         ),
