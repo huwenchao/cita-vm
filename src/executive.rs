@@ -330,11 +330,20 @@ fn reinterpret_tx<B: DB + 'static>(
     request
 }
 
+// pub fn exec_riscv<B: DB + 'static>(
+//     block_provider: Arc<BlockDataProvider>,
+//     state_provider: Arc<RefCell<state::State<B>>>,
+//     context: Context,
+//     config: Config,
+//     tx: Transaction,
+// ) -> Result<InterpreterResult, err::Error> {
+// }
+
 /// Execute the transaction from transaction pool
 pub fn exec<B: DB + 'static>(
     block_provider: Arc<BlockDataProvider>,
     state_provider: Arc<RefCell<state::State<B>>>,
-    evm_context: Context,
+    context: Context,
     config: Config,
     tx: Transaction,
 ) -> Result<InterpreterResult, err::Error> {
@@ -366,7 +375,7 @@ pub fn exec<B: DB + 'static>(
     // Init the store for the transaction
     let mut store = Store::default();
     store.cfg = get_interpreter_conf();
-    store.context = evm_context.clone();
+    store.context = context.clone();
     store.used(request.receiver);
     let store = Arc::new(RefCell::new(store));
     // Create a sub request
