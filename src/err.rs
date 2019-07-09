@@ -2,12 +2,15 @@ use std::error;
 use std::fmt;
 use std::io;
 
+use ckb_vm;
+
 use crate::evm;
 use crate::state::Error as StateError;
 
 #[derive(Debug)]
 pub enum Error {
     Evm(evm::Error),
+    Riscv(ckb_vm::Error),
     Secp256k1(secp256k1::Error),
     State(StateError),
     IO(io::Error),
@@ -20,6 +23,7 @@ pub enum Error {
     ExccedMaxBlockGasLimit,
     ExccedMaxCallDepth,
     CreateInStaticCall,
+    ExitCodeError,
 }
 
 impl error::Error for Error {}
@@ -27,6 +31,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Evm(e) => return write!(f, "{}", e),
+            Error::Riscv(e) => return write!(f, "{:?}", e),
             Error::Secp256k1(e) => return write!(f, "{:?}", e),
             Error::State(e) => return write!(f, "{}", e),
             Error::IO(e) => return write!(f, "{:?}", e),
@@ -39,6 +44,7 @@ impl fmt::Display for Error {
             Error::ExccedMaxBlockGasLimit => return write!(f, "ExccedMaxBlockGasLimit"),
             Error::ExccedMaxCallDepth => return write!(f, "ExccedMaxCallDepth"),
             Error::CreateInStaticCall => return write!(f, "CreateInStaticCall"),
+            Error::ExitCodeError => return write!(f, "ExitCodeError"),
         };
     }
 }
@@ -64,5 +70,11 @@ impl From<secp256k1::Error> for Error {
 impl From<io::Error> for Error {
     fn from(error: io::Error) -> Self {
         Error::IO(error)
+    }
+}
+
+impl From<ckb_vm::Error> for Error {
+    fn from(error: ckb_vm::Error) -> Self {
+        Error::Riscv(error)
     }
 }
