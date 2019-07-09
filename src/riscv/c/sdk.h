@@ -31,6 +31,24 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 #define SYSCODE_CALLER 2193
 #define SYSCODE_CALLVALUE 2194
 
+// CALLDATALOAD
+// CALLDATASIZE
+// CALLDATACOPY
+// CODESIZE
+// CODECOPY
+// GASPRICE
+// EXTCODESIZE
+// EXTCODECOPY
+// RETURNDATASIZE
+// RETURNDATACOPY
+
+// BLOCKHASH
+// COINBASE
+// TIMESTAMP
+// NUMBER
+// DIFFICULTY
+// GASLIMIT
+
 
 // Function env_debug accepts a string that contains the text to be written to stdout(It depends on the VM).
 // Params:
