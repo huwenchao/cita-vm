@@ -60,3 +60,11 @@ if (callvalue[31] == 0x05) {
 } else {
     env.debug('Test[x]: env.callvalue')
 }
+
+env.debug('Testing: env.number')
+var number = env.number()
+if (number[31] == 0x06) {
+    env.debug('Test[v]: env.number')
+} else {
+    env.debug('Test[x]: env.number')
+}

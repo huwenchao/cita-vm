@@ -25,7 +25,8 @@ fn main() {
     vm_params.value = ethereum_types::U256::from(5);
 
     // Initialize context
-    let vm_context = cita_vm::evm::Context::default();
+    let mut vm_context = cita_vm::evm::Context::default();
+    vm_context.number = ethereum_types::U256::from(6);
 
     // Initialize storage
     let state = Rc::new(RefCell::new(cita_vm::evm::extmock::DataProviderMock::default()));

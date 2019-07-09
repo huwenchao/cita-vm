@@ -30,24 +30,23 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 #define SYSCODE_ORIGIN 2192
 #define SYSCODE_CALLER 2193
 #define SYSCODE_CALLVALUE 2194
+// #define CALLDATALOAD 2195
+// #define CALLDATASIZE 2196
+// #define CALLDATACOPY 2197
+// #define CODESIZE 2198
+// #define CODECOPY 2199
+// #define GASPRICE 3000
+// #define EXTCODESIZE 3001
+// #define EXTCODECOPY 3002
+// #define RETURNDATASIZE 3003
+// #define RETURNDATACOPY 3004
 
-// CALLDATALOAD
-// CALLDATASIZE
-// CALLDATACOPY
-// CODESIZE
-// CODECOPY
-// GASPRICE
-// EXTCODESIZE
-// EXTCODECOPY
-// RETURNDATASIZE
-// RETURNDATACOPY
-
-// BLOCKHASH
-// COINBASE
-// TIMESTAMP
-// NUMBER
-// DIFFICULTY
-// GASLIMIT
+// #define BLOCKHASH 3010
+// #define COINBASE 3011
+// #define TIMESTAMP 3012
+#define SYSCODE_NUMBER 3013
+// #define DIFFICULTY 3014
+// #define GASLIMIT3015
 
 
 // Function env_debug accepts a string that contains the text to be written to stdout(It depends on the VM).
@@ -152,4 +151,14 @@ int env_caller(uint8_t *addr)
 int env_callvalue(uint8_t *v)
 {
     return syscall(SYSCODE_CALLVALUE, v, 0, 0, 0, 0, 0);
+}
+
+// Function env_number loads current block number.
+// Params:
+//   v: a pointer to a 32 bytes buffer where the value located at.
+// Return:
+//   code: 0(success)
+int env_number(uint8_t *v)
+{
+    return syscall(SYSCODE_NUMBER, v, 0, 0, 0, 0, 0);
 }

@@ -77,5 +77,14 @@ int main(int argc, char* argv[]) {
       env_debug("Test[x]: callvalue");
   }
 
+  env_debug("Testing: number");
+  uint8_t number[32];
+  env_number(&number[0]);
+  if number[31] == 6 {
+      env_debug("Test[v]: number");
+  } else {
+      env_debug("Test[x]: number");
+  }
+
   return 0;
 }
