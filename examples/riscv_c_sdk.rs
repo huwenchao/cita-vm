@@ -19,8 +19,8 @@ fn main() {
 
     // Initialize params
     let mut vm_params = cita_vm::evm::InterpreterParams::default();
-    vm_params.origin = ethereum_types::Address::from("0x0000000000000000000000000000000000000001");
-    vm_params.address = vm_params.origin;
+    vm_params.address = ethereum_types::Address::from("0x0000000000000000000000000000000000000001");
+    vm_params.origin = ethereum_types::Address::from("0x0000000000000000000000000000000000000002");
 
     // Initialize context
     let vm_context = cita_vm::evm::Context::default();

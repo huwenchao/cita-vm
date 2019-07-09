@@ -27,6 +27,7 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 #define SYSCODE_LOAD 2182
 #define SYSCODE_ADDRESS 2190
 #define SYSCODE_BALANCE 2191
+#define SYSCODE_ORIGIN 2192
 
 
 // Function env_debug accepts a string that contains the text to be written to stdout(It depends on the VM).
@@ -101,4 +102,14 @@ int env_address(uint8_t *addr)
 int env_balance(uint8_t *addr, uint8_t *v)
 {
     return syscall(SYSCODE_BALANCE, addr, v, 0, 0, 0, 0);
+}
+
+// Function env_origin loads current origin.
+// Params:
+//   addr: a pointer to a buffer in VM memory space denoting where the address located at.
+// Return:
+//   code: 0(success)
+int env_origin(uint8_t *addr)
+{
+    return syscall(SYSCODE_ORIGIN, addr, 0, 0, 0, 0, 0);
 }

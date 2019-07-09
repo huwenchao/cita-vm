@@ -9,7 +9,7 @@ use crate::evm::Context;
 use crate::evm::DataProvider;
 use crate::evm::InterpreterParams;
 use crate::riscv::syscall::common::get_arr;
-use crate::riscv::syscall::convention::{SYSCODE_ADDRESS, SYSCODE_BALANCE};
+use crate::riscv::syscall::convention::{SYSCODE_ADDRESS, SYSCODE_BALANCE, SYSCODE_ORIGIN};
 
 pub struct SyscallEnvironment {
     context: Context,
@@ -48,6 +48,12 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallEnvironment {
                 let mut v_byte = [0x00u8; 32];
                 v_u256.to_big_endian(&mut v_byte);
                 machine.memory_mut().store_bytes(v_addr, &v_byte)?;
+                Ok(true)
+            }
+            SYSCODE_ORIGIN => {
+                let addr = machine.registers()[ckb_vm::registers::A0].to_usize();
+                machine.memory_mut().store_bytes(addr, &self.iparams.origin)?;
+                machine.set_register(ckb_vm::registers::A0, Mac::REG::from_u8(0));
                 Ok(true)
             }
             _ => Ok(false),
