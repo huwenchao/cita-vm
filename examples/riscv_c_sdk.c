@@ -68,5 +68,14 @@ int main(int argc, char* argv[]) {
       env_debug("Test[x]: caller");
   }
 
+  env_debug("Testing: callvalue");
+  uint8_t callvalue[32];
+  env_callvalue(&callvalue[0]);
+  if callvalue[31] == 5 {
+      env_debug("Test[v]: callvalue");
+  } else {
+      env_debug("Test[x]: callvalue");
+  }
+
   return 0;
 }

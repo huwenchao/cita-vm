@@ -29,6 +29,7 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 #define SYSCODE_BALANCE 2191
 #define SYSCODE_ORIGIN 2192
 #define SYSCODE_CALLER 2193
+#define SYSCODE_CALLVALUE 2194
 
 
 // Function env_debug accepts a string that contains the text to be written to stdout(It depends on the VM).
@@ -97,7 +98,7 @@ int env_address(uint8_t *addr)
 // Function env_balance loads balance of the specific address.
 // Params:
 //   addr: a pointer to a buffer in VM memory space denoting where the address located at.
-//   v: a pointer to a 4 bytes buffer where the value located at.
+//   v: a pointer to a 32 bytes buffer where the value located at.
 // Return:
 //   code: 0(success)
 int env_balance(uint8_t *addr, uint8_t *v)
@@ -123,4 +124,14 @@ int env_origin(uint8_t *addr)
 int env_caller(uint8_t *addr)
 {
     return syscall(SYSCODE_CALLER, addr, 0, 0, 0, 0, 0);
+}
+
+// Function env_callvalue loads current value.
+// Params:
+//   v: a pointer to a 32 bytes buffer where the value located at.
+// Return:
+//   code: 0(success)
+int env_callvalue(uint8_t *v)
+{
+    return syscall(SYSCODE_CALLVALUE, v, 0, 0, 0, 0, 0);
 }

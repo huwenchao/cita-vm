@@ -52,3 +52,11 @@ if (addr[19] == 0x03) {
 } else {
     env.debug('Test[x]: env.caller')
 }
+
+env.debug('Testing: env.callvalue')
+var callvalue = env.callvalue()
+if (callvalue[31] == 0x05) {
+    env.debug('Test[v]: env.callvalue')
+} else {
+    env.debug('Test[x]: env.callvalue')
+}
