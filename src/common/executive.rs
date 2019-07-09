@@ -5,7 +5,7 @@ use cita_trie::DB;
 use ethereum_types::{Address, H256, U256};
 use hashbrown::{HashMap, HashSet};
 
-use crate::evm;
+use crate::evm::InterpreterConf;
 use crate::state::State;
 
 /// BlockDataProvider provides functions to get block's hash from chain.
@@ -119,8 +119,8 @@ pub struct Store {
     //   ./tests/jsondata/GeneralStateTests/stSStoreTest/sstore_combinations_initial1.json
     //   ./tests/jsondata/GeneralStateTests/stSStoreTest/sstore_combinations_initial2.json
     pub inused: HashSet<Address>,
-    pub evm_context: Context,
-    pub evm_cfg: evm::InterpreterConf,
+    pub context: Context,
+    pub cfg: InterpreterConf,
 }
 
 impl Store {

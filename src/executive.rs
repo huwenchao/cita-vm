@@ -109,7 +109,7 @@ pub fn clear<B: DB + 'static>(
         .borrow_mut()
         .add_balance(&request.sender, request.gas_price * (gas_left + refund))?;
     state_provider.borrow_mut().add_balance(
-        &store.borrow().evm_context.coinbase,
+        &store.borrow().context.coinbase,
         request.gas_price * (request.gas_limit - gas_left - refund),
     )?;
     Ok(())
@@ -138,8 +138,8 @@ fn call_pure<B: DB + 'static>(
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
 ) -> Result<InterpreterResult, err::Error> {
-    let evm_context = store.borrow().evm_context.clone();
-    let evm_cfg = store.borrow().evm_cfg.clone();
+    let evm_context = store.borrow().context.clone();
+    let evm_cfg = store.borrow().cfg.clone();
     let evm_params = request.clone();
     let evm_data_provider = DataProvider::new(block_provider.clone(), state_provider.clone(), store.clone());
     // Transfer value
@@ -365,8 +365,8 @@ pub fn exec<B: DB + 'static>(
     state_provider.borrow_mut().inc_nonce(&request.sender)?;
     // Init the store for the transaction
     let mut store = Store::default();
-    store.evm_cfg = get_interpreter_conf();
-    store.evm_context = evm_context.clone();
+    store.cfg = get_interpreter_conf();
+    store.context = evm_context.clone();
     store.used(request.receiver);
     let store = Arc::new(RefCell::new(store));
     // Create a sub request
@@ -447,8 +447,8 @@ pub fn exec_static<B: DB + 'static>(
     request.read_only = true;
     request.disable_transfer_value = true;
     let mut store = Store::default();
-    store.evm_cfg = get_interpreter_conf();
-    store.evm_context = evm_context.clone();
+    store.cfg = get_interpreter_conf();
+    store.context = evm_context.clone();
     let store = Arc::new(RefCell::new(store));
     call_pure(block_provider.clone(), state_provider.clone(), store.clone(), &request)
 }
