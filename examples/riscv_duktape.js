@@ -44,3 +44,11 @@ if (addr[19] == 0x02) {
 } else {
     env.debug('Test[x]: env.origin')
 }
+
+env.debug('Testing: env.caller')
+var addr = env.caller()
+if (addr[19] == 0x03) {
+    env.debug('Test[v]: env.caller')
+} else {
+    env.debug('Test[x]: env.caller')
+}

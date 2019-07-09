@@ -59,5 +59,14 @@ int main(int argc, char* argv[]) {
       env_debug("Test[x]: origin");
   }
 
+  env_debug("Testing: caller");
+  uint8_t caller[20];
+  env_origin(&caller[0]);
+  if (caller[19] == 0x03) {
+      env_debug("Test[v]: caller");
+  } else {
+      env_debug("Test[x]: caller");
+  }
+
   return 0;
 }

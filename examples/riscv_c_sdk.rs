@@ -21,6 +21,7 @@ fn main() {
     let mut vm_params = cita_vm::evm::InterpreterParams::default();
     vm_params.address = ethereum_types::Address::from("0x0000000000000000000000000000000000000001");
     vm_params.origin = ethereum_types::Address::from("0x0000000000000000000000000000000000000002");
+    vm_params.sender = ethereum_types::Address::from("0x0000000000000000000000000000000000000003");
 
     // Initialize context
     let vm_context = cita_vm::evm::Context::default();
@@ -40,10 +41,7 @@ fn main() {
 
     let mut machine =
         ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>>::default()
-            .syscall(Box::new(cita_vm::riscv::SyscallDebug::new(
-                "riscv:",
-                std::io::stdout(),
-            )))
+            .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
             .syscall(Box::new(cita_vm::riscv::SyscallEnvironment::new(
                 vm_context.clone(),
                 vm_params.clone(),
