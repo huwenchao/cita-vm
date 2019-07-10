@@ -4,18 +4,18 @@ use std::rc::Rc;
 use bytes::Bytes;
 use ckb_vm::machine::SupportMachine;
 
-use crate::evm;
+use crate::evm::DataProvider;
 use crate::riscv;
 use crate::{Context, InterpreterParams, InterpreterResult};
 
 pub struct Interpreter {
     pub context: Context,
     pub iparams: InterpreterParams,
-    pub data_provider: Rc<RefCell<evm::DataProvider>>,
+    pub data_provider: Rc<RefCell<DataProvider>>,
 }
 
 impl Interpreter {
-    pub fn new(context: Context, iparams: InterpreterParams, data_provider: Rc<RefCell<evm::DataProvider>>) -> Self {
+    pub fn new(context: Context, iparams: InterpreterParams, data_provider: Rc<RefCell<DataProvider>>) -> Self {
         Self {
             context,
             iparams,
@@ -63,7 +63,7 @@ impl Interpreter {
 // pub fn exec(
 //     context: Context,
 //     iparams: InterpreterParams,
-//     state: std::rc::Rc<std::cell::RefCell<evm::DataProvider>>,
+//     state: std::rc::Rc<std::cell::RefCell<DataProvider>>,
 //     code: bytes::Bytes,
 //     args: Vec<bytes::Bytes>,
 // ) -> Result<u64, riscv::err::Error> {
