@@ -1,11 +1,11 @@
 use std::cell::RefCell;
-use std::collections::BTreeMap;
 use std::io::Read;
 use std::rc::Rc;
 
 use bytes::Bytes;
 use cita_vm;
 use ckb_vm;
+use hashbrown::HashMap;
 
 fn main() {
     // Load binary
@@ -37,7 +37,7 @@ fn main() {
             balance: ethereum_types::U256::from(10),
             code: vec![],
             nonce: ethereum_types::U256::from(0),
-            storage: BTreeMap::new(),
+            storage: HashMap::new(),
         },
     );
 
