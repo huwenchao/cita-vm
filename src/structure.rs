@@ -68,3 +68,12 @@ pub struct Transaction {
     pub input: Vec<u8>,
     pub itype: InterpreterType,
 }
+
+#[derive(Clone, Debug, Default)]
+pub struct Context {
+    pub gas_limit: u64,
+    pub coinbase: Address,
+    pub number: U256,
+    pub timestamp: u64,
+    pub difficulty: U256,
+}

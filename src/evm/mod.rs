@@ -1,13 +1,19 @@
-pub mod common;
-mod err;
-mod ext;
-pub mod extmock;
-mod interpreter;
-mod memory;
-mod opcodes;
-mod stack;
+mod common;
 
+mod err;
 pub use err::Error;
+
+mod ext;
 pub use ext::DataProvider;
+
+pub mod extmock;
+
+mod interpreter;
 pub use interpreter::{Interpreter, InterpreterConf};
+
+mod memory;
+
+mod opcodes;
 pub use opcodes::OpCode;
+
+mod stack;

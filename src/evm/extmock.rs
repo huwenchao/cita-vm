@@ -2,10 +2,9 @@ use ethereum_types::{Address, H256, U256};
 
 use hashbrown::HashMap;
 
-use crate::common::executive::Context;
 use crate::common::hash::summary;
 use crate::evm::{DataProvider, Error, Interpreter, InterpreterConf, OpCode};
-use crate::{InterpreterParams, InterpreterResult};
+use crate::{Context, InterpreterParams, InterpreterResult};
 
 #[derive(Clone, Default)]
 pub struct Account {

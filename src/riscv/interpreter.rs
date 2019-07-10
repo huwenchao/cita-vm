@@ -4,10 +4,9 @@ use std::rc::Rc;
 use bytes::Bytes;
 use ckb_vm::machine::SupportMachine;
 
-use crate::common::executive::Context;
 use crate::evm;
 use crate::riscv;
-use crate::{InterpreterParams, InterpreterResult};
+use crate::{Context, InterpreterParams, InterpreterResult};
 
 pub struct Interpreter {
     pub context: Context,

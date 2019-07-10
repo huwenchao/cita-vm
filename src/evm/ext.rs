@@ -1,7 +1,6 @@
 use ethereum_types::{Address, H256, U256};
 
-use crate::evm::Error;
-use crate::evm::OpCode;
+use crate::evm::{Error, OpCode};
 use crate::{InterpreterParams, InterpreterResult};
 
 pub trait DataProvider {

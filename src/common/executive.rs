@@ -7,6 +7,7 @@ use hashbrown::{HashMap, HashSet};
 
 use crate::evm::InterpreterConf;
 use crate::state::State;
+use crate::Context;
 
 /// BlockDataProvider provides functions to get block's hash from chain.
 ///
@@ -35,15 +36,6 @@ impl BlockDataProvider for BlockDataProviderMock {
     fn get_block_hash(&self, number: &U256) -> H256 {
         *self.data.get(number).unwrap_or(&H256::zero())
     }
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct Context {
-    pub gas_limit: u64,
-    pub coinbase: Address,
-    pub number: U256,
-    pub timestamp: u64,
-    pub difficulty: U256,
 }
 
 /// An implemention for evm::DataProvider

@@ -1,17 +1,14 @@
 use std::cmp;
 
 use ethereum_types::{H256, U256, U512};
-use log::debug;
 
-use crate::common::executive::Context;
 use crate::evm::common;
 use crate::evm::err;
 use crate::evm::ext;
 use crate::evm::memory;
 use crate::evm::opcodes;
 use crate::evm::stack;
-use crate::InterpreterParams;
-use crate::{InterpreterResult, Log};
+use crate::{Context, InterpreterParams, InterpreterResult, Log};
 
 #[derive(Clone)]
 pub struct InterpreterConf {
@@ -1077,13 +1074,13 @@ impl Interpreter {
                     break;
                 }
             }
-            debug!("");
+            log::debug!("");
         }
         Ok(InterpreterResult::Normal(vec![], self.gas, self.logs.clone()))
     }
 
     fn use_gas(&mut self, gas: u64) -> Result<(), err::Error> {
-        debug!("[Gas] - {}", gas);
+        log::debug!("[Gas] - {}", gas);
         if self.gas < gas {
             return Err(err::Error::OutOfGas);
         }
@@ -1166,16 +1163,16 @@ impl Interpreter {
                     U256::from(&self.params.contract.code_data[pc as usize..(pc + u64::from(n)) as usize])
                 }
             };
-            debug!("[OP] {} {:#x} gas={}", op, r, self.gas);
+            log::debug!("[OP] {} {:#x} gas={}", op, r, self.gas);
         } else {
-            debug!("[OP] {} gas={}", op, self.gas);
+            log::debug!("[OP] {} gas={}", op, self.gas);
         }
-        debug!("[STACK]");
+        log::debug!("[STACK]");
         let l = self.stack.data().len();
         for i in 0..l {
-            debug!("[{}] {:#x}", i, self.stack.back(i));
+            log::debug!("[{}] {:#x}", i, self.stack.back(i));
         }
-        debug!("[MEM] len={}", self.mem.len());
+        log::debug!("[MEM] len={}", self.mem.len());
     }
 }
 
