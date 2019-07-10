@@ -24,7 +24,8 @@ impl Interpreter {
 
     pub fn run(&mut self) -> Result<InterpreterResult, ckb_vm::Error> {
         let code = Bytes::from(self.iparams.contract.code_data.clone());
-        let args: Vec<Bytes> = self.iparams.input.split(|e| *e == 0x00).map(Bytes::from).collect();
+        let args = self.iparams.input.as_slice()[8..].to_vec();
+        let args: Vec<Bytes> = args.split(|e| *e == 0x00).map(Bytes::from).collect();
 
         let ret_data = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
         let core_machine =

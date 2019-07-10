@@ -247,7 +247,8 @@ fn create<B: DB + 'static>(
     }
 
     if request.interpreter_type() != InterpreterType::EVM {
-        state_provider.borrow_mut().set_code(&address, request.input.clone())?;
+        let code = request.input.as_slice()[8..].to_vec();
+        state_provider.borrow_mut().set_code(&address, code)?;
         return Ok(InterpreterResult::Create(vec![], request.gas_limit, vec![], address));
     }
 
