@@ -1,12 +1,11 @@
 mod cost_model;
-mod err;
-mod interpreter;
-mod syscall;
-
 pub use cost_model::instruction_cycles;
+
+mod err;
 pub use err::Error;
+
+mod interpreter;
 pub use interpreter::Interpreter;
-pub use syscall::SyscallDebug;
-pub use syscall::SyscallEnvironment;
-pub use syscall::SyscallRet;
-pub use syscall::SyscallStorage;
+
+mod syscall;
+pub use syscall::{SyscallDebug, SyscallEnvironment, SyscallRet, SyscallStorage};
