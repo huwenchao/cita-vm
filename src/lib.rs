@@ -12,8 +12,6 @@ pub use executive::{
 
 pub mod json_tests;
 
-mod native;
-
 pub mod riscv;
 
 pub mod state;

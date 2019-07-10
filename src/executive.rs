@@ -11,7 +11,7 @@ use rlp::RlpStream;
 use crate::common;
 use crate::err::Error;
 use crate::evm;
-use crate::native;
+use crate::evm::native;
 use crate::riscv;
 use crate::state::{self, State, StateObjectInfo};
 use crate::{Context, Contract, InterpreterParams, InterpreterResult, InterpreterType, Transaction};
@@ -240,7 +240,7 @@ fn call_pure<B: DB + 'static>(
             Ok(ok) => {
                 return Ok(InterpreterResult::Normal(ok, request.gas_limit - gas, vec![]));
             }
-            Err(e) => return Err(e),
+            Err(e) => return Err(e.into()),
         }
     }
 

@@ -1,6 +1,5 @@
 use std::error;
 use std::fmt;
-use std::io;
 
 use ckb_vm;
 
@@ -13,7 +12,6 @@ pub enum Error {
     Riscv(ckb_vm::Error),
     Secp256k1(secp256k1::Error),
     State(StateError),
-    IO(io::Error),
     Str(String),
     NotEnoughBaseGas,
     NotEnoughBalance,
@@ -34,7 +32,6 @@ impl fmt::Display for Error {
             Error::Riscv(e) => return write!(f, "{:?}", e),
             Error::Secp256k1(e) => return write!(f, "{:?}", e),
             Error::State(e) => return write!(f, "{}", e),
-            Error::IO(e) => return write!(f, "{:?}", e),
             Error::Str(e) => return write!(f, "{:?}", e),
             Error::NotEnoughBaseGas => return write!(f, "NotEnoughBaseGas"),
             Error::NotEnoughBalance => return write!(f, "NotEnoughBalance"),
@@ -64,12 +61,6 @@ impl From<StateError> for Error {
 impl From<secp256k1::Error> for Error {
     fn from(error: secp256k1::Error) -> Self {
         Error::Secp256k1(error)
-    }
-}
-
-impl From<io::Error> for Error {
-    fn from(error: io::Error) -> Self {
-        Error::IO(error)
     }
 }
 
