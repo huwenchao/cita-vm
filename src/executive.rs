@@ -5,7 +5,6 @@ use std::sync::Arc;
 use cita_trie::DB;
 use ethereum_types::{Address, H256, U256};
 use hashbrown::{HashMap, HashSet};
-use log::debug;
 use rlp::RlpStream;
 
 use crate::common;
@@ -72,7 +71,7 @@ impl<B: DB + 'static> evm::DataProvider for DataProvider<B> {
     }
 
     fn add_refund(&mut self, address: &Address, n: u64) {
-        debug!("ext.add_refund {:?} {}", address, n);
+        log::debug!("ext.add_refund {:?} {}", address, n);
         self.store
             .borrow_mut()
             .refund
@@ -82,7 +81,7 @@ impl<B: DB + 'static> evm::DataProvider for DataProvider<B> {
     }
 
     fn sub_refund(&mut self, address: &Address, n: u64) {
-        debug!("ext.sub_refund {:?} {}", address, n);
+        log::debug!("ext.sub_refund {:?} {}", address, n);
         self.store
             .borrow_mut()
             .refund
@@ -224,7 +223,7 @@ impl<B: DB + 'static> evm::DataProvider for DataProvider<B> {
                     _ => unimplemented!(),
                 }
                 .or(Err(evm::Error::CallError));
-                debug!("ext.create.result = {:?}", r);
+                log::debug!("ext.create.result = {:?}", r);
                 r
             }
             _ => unimplemented!(),
@@ -434,7 +433,7 @@ fn call<B: DB + 'static>(
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
 ) -> Result<InterpreterResult, Error> {
-    debug!("call request={:?}", request);
+    log::debug!("call request={:?}", request);
     // Ensure balance
     if !request.disable_transfer_value && state_provider.borrow_mut().balance(&request.sender)? < request.value {
         return Err(Error::NotEnoughBalance);
@@ -448,7 +447,7 @@ fn call<B: DB + 'static>(
         store_son.clone(),
         request,
     );
-    debug!("call result={:?}", r);
+    log::debug!("call result={:?}", r);
     match r {
         Ok(InterpreterResult::Normal(output, gas_left, logs)) => {
             state_provider.borrow_mut().discard_checkpoint();
@@ -475,7 +474,7 @@ fn create<B: DB + 'static>(
     request: &InterpreterParams,
     create_kind: CreateKind,
 ) -> Result<InterpreterResult, Error> {
-    debug!("create request={:?}", request);
+    log::debug!("create request={:?}", request);
     let address = match create_kind {
         CreateKind::FromAddressAndNonce => {
             // Generate new address created from address, nonce
@@ -486,7 +485,7 @@ fn create<B: DB + 'static>(
             create_address_from_salt_and_code_hash(&request.sender, request.extra, request.input.clone())
         }
     };
-    debug!("create address={:?}", address);
+    log::debug!("create address={:?}", address);
     // Ensure there's no existing contract already at the designated address
     if !can_create(state_provider.clone(), &address)? {
         return Err(Error::ContractAlreadyExist);
@@ -540,19 +539,19 @@ fn create<B: DB + 'static>(
             state_provider.borrow_mut().set_code(&address, output.clone())?;
             state_provider.borrow_mut().discard_checkpoint();
             let r = Ok(InterpreterResult::Create(output, gas_left, logs, address));
-            debug!("create result={:?}", r);
-            debug!("create gas_left={:?}", gas_left);
+            log::debug!("create result={:?}", r);
+            log::debug!("create gas_left={:?}", gas_left);
             r
         }
         Ok(InterpreterResult::Revert(output, gas_left)) => {
             state_provider.borrow_mut().revert_checkpoint();
             let r = Ok(InterpreterResult::Revert(output, gas_left));
-            debug!("create gas_left={:?}", gas_left);
-            debug!("create result={:?}", r);
+            log::debug!("create gas_left={:?}", gas_left);
+            log::debug!("create result={:?}", r);
             r
         }
         Err(e) => {
-            debug!("create err={:?}", e);
+            log::debug!("create err={:?}", e);
             state_provider.borrow_mut().revert_checkpoint();
             Err(e)
         }
@@ -659,12 +658,12 @@ pub fn exec<B: DB + 'static>(
         call(block_provider.clone(), state_provider.clone(), store.clone(), &reqchan)
     };
     // Finalize
-    debug!("exec result={:?}", r);
+    log::debug!("exec result={:?}", r);
     match r {
         Ok(InterpreterResult::Normal(output, gas_left, logs)) => {
-            debug!("exec gas_left={:?}", gas_left);
+            log::debug!("exec gas_left={:?}", gas_left);
             let refund = get_refund(store.clone(), &request, gas_left);
-            debug!("exec refund={:?}", refund);
+            log::debug!("exec refund={:?}", refund);
             clear(state_provider.clone(), store.clone(), &request, gas_left, refund)?;
             // Handle self destruct: Kill it.
             // Note: must after ends of the transaction.
@@ -675,15 +674,15 @@ pub fn exec<B: DB + 'static>(
             Ok(InterpreterResult::Normal(output, gas_left, logs))
         }
         Ok(InterpreterResult::Revert(output, gas_left)) => {
-            debug!("exec gas_left={:?}", gas_left);
+            log::debug!("exec gas_left={:?}", gas_left);
             clear(state_provider.clone(), store.clone(), &request, gas_left, 0)?;
             state_provider.borrow_mut().kill_garbage(&store.borrow().inused.clone());
             Ok(InterpreterResult::Revert(output, gas_left))
         }
         Ok(InterpreterResult::Create(output, gas_left, logs, addr)) => {
-            debug!("exec gas_left={:?}", gas_left);
+            log::debug!("exec gas_left={:?}", gas_left);
             let refund = get_refund(store.clone(), &request, gas_left);
-            debug!("exec refund={:?}", refund);
+            log::debug!("exec refund={:?}", refund);
             clear(state_provider.clone(), store.clone(), &request, gas_left, refund)?;
             for e in store.borrow_mut().selfdestruct.drain() {
                 state_provider.borrow_mut().kill_contract(&e)
