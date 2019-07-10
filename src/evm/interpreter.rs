@@ -3,8 +3,8 @@ use std::cmp;
 use ethereum_types::{H256, U256, U512};
 
 use crate::evm::common;
-use crate::evm::ext;
-use crate::evm::memory;
+use crate::evm::ext::DataProvider;
+use crate::evm::memory::Memory;
 use crate::evm::stack::Stack;
 use crate::evm::Error;
 use crate::evm::OpCode;
@@ -106,12 +106,12 @@ impl Default for InterpreterConf {
 pub struct Interpreter {
     pub context: Context,
     pub cfg: InterpreterConf,
-    pub data_provider: Box<ext::DataProvider>,
+    pub data_provider: Box<DataProvider>,
     pub params: InterpreterParams,
 
     gas: u64,
     stack: Stack<U256>,
-    mem: memory::Memory,
+    mem: Memory,
     logs: Vec<Log>,
     return_data: Vec<u8>,
     mem_gas: u64,
@@ -122,7 +122,7 @@ impl Interpreter {
     pub fn new(
         context: Context,
         cfg: InterpreterConf,
-        data_provider: Box<ext::DataProvider>,
+        data_provider: Box<DataProvider>,
         params: InterpreterParams,
     ) -> Self {
         let gas = params.gas_limit;
@@ -133,7 +133,7 @@ impl Interpreter {
             params,
             gas,
             stack: Stack::with_capacity(1024),
-            mem: memory::Memory::default(),
+            mem: Memory::default(),
             logs: Vec::new(),
             return_data: Vec::new(),
             mem_gas: 0,
