@@ -492,9 +492,9 @@ fn create<B: DB + 'static>(
         return Err(Error::ContractAlreadyExist);
     }
 
+    // Just save the code at account's code field.
     if request.itype != InterpreterType::EVM {
-        let code = request.input.as_slice()[8..].to_vec();
-        state_provider.borrow_mut().set_code(&address, code)?;
+        state_provider.borrow_mut().set_code(&address, request.input.clone())?;
         return Ok(InterpreterResult::Create(vec![], request.gas_limit, vec![], address));
     }
 
