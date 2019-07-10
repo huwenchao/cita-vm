@@ -387,10 +387,10 @@ fn call_pure<B: DB + 'static>(
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
 ) -> Result<InterpreterResult, Error> {
-    let evm_context = store.borrow().context.clone();
+    let context = store.borrow().context.clone();
     let evm_cfg = store.borrow().cfg.clone();
-    let evm_params = request.clone();
-    let evm_data_provider = DataProvider::new(block_provider.clone(), state_provider.clone(), store.clone());
+    let iparams = request.clone();
+    let data_provider = DataProvider::new(block_provider.clone(), state_provider.clone(), store.clone());
     // Transfer value
     if !request.disable_transfer_value {
         state_provider
@@ -416,11 +416,11 @@ fn call_pure<B: DB + 'static>(
     // Run
     match request.itype {
         InterpreterType::EVM => {
-            let mut it = evm::Interpreter::new(evm_context, evm_cfg, Box::new(evm_data_provider), evm_params);
+            let mut it = evm::Interpreter::new(context, evm_cfg, Box::new(data_provider), iparams);
             Ok(it.run()?)
         }
         InterpreterType::C => {
-            let mut it = riscv::Interpreter::new(evm_context, evm_params, Rc::new(RefCell::new(evm_data_provider)));
+            let mut it = riscv::Interpreter::new(context, iparams, Rc::new(RefCell::new(data_provider)));
             Ok(it.run()?)
         }
         InterpreterType::JS => unimplemented!(),
