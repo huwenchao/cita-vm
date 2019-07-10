@@ -3,7 +3,10 @@ use ethereum_types::{Address, H256, U256};
 use hashbrown::HashMap;
 
 use crate::common::hash::summary;
-use crate::evm::{DataProvider, Error, Interpreter, InterpreterConf, OpCode};
+use crate::evm::err::Error;
+use crate::evm::ext::DataProvider;
+use crate::evm::interpreter::{Interpreter, InterpreterConf};
+use crate::evm::opcodes::OpCode;
 use crate::{Context, InterpreterParams, InterpreterResult};
 
 #[derive(Clone, Default)]
