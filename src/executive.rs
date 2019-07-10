@@ -9,9 +9,8 @@ use log::debug;
 use rlp::RlpStream;
 
 use crate::common;
-use crate::err;
+use crate::err::Error;
 use crate::evm;
-use crate::evm::InterpreterConf;
 use crate::native;
 use crate::riscv;
 use crate::state::{self, State, StateObjectInfo};
@@ -78,7 +77,7 @@ pub struct Store {
     //   ./tests/jsondata/GeneralStateTests/stSStoreTest/sstore_combinations_initial2.json
     pub inused: HashSet<Address>,
     pub context: Context,
-    pub cfg: InterpreterConf,
+    pub cfg: evm::InterpreterConf,
 }
 
 impl Store {
@@ -142,7 +141,7 @@ pub fn get_interpreter_conf() -> evm::InterpreterConf {
 pub fn can_create<B: DB + 'static>(
     state_provider: Arc<RefCell<state::State<B>>>,
     address: &Address,
-) -> Result<bool, err::Error> {
+) -> Result<bool, Error> {
     let a = state_provider.borrow_mut().nonce(&address)?;
     let b = state_provider.borrow_mut().code(&address)?;
     Ok(a.is_zero() && b.is_empty())
@@ -185,7 +184,7 @@ pub fn clear<B: DB + 'static>(
     request: &InterpreterParams,
     gas_left: u64,
     refund: u64,
-) -> Result<(), err::Error> {
+) -> Result<(), Error> {
     state_provider
         .borrow_mut()
         .add_balance(&request.sender, request.gas_price * (gas_left + refund))?;
@@ -218,7 +217,7 @@ fn call_pure<B: DB + 'static>(
     state_provider: Arc<RefCell<state::State<B>>>,
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
-) -> Result<InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, Error> {
     let evm_context = store.borrow().context.clone();
     let evm_cfg = store.borrow().cfg.clone();
     let evm_params = request.clone();
@@ -234,7 +233,7 @@ fn call_pure<B: DB + 'static>(
         let c = native::get(request.contract.code_address);
         let gas = c.required_gas(&request.input);
         if request.gas_limit < gas {
-            return Err(err::Error::Evm(evm::Error::OutOfGas));
+            return Err(Error::Evm(evm::Error::OutOfGas));
         }
         let r = c.run(&request.input);
         match r {
@@ -265,11 +264,11 @@ fn call<B: DB + 'static>(
     state_provider: Arc<RefCell<state::State<B>>>,
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
-) -> Result<InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, Error> {
     debug!("call request={:?}", request);
     // Ensure balance
     if !request.disable_transfer_value && state_provider.borrow_mut().balance(&request.sender)? < request.value {
-        return Err(err::Error::NotEnoughBalance);
+        return Err(Error::NotEnoughBalance);
     }
     // Run
     state_provider.borrow_mut().checkpoint();
@@ -306,7 +305,7 @@ fn create<B: DB + 'static>(
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
     create_kind: CreateKind,
-) -> Result<InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, Error> {
     debug!("create request={:?}", request);
     let address = match create_kind {
         CreateKind::FromAddressAndNonce => {
@@ -321,7 +320,7 @@ fn create<B: DB + 'static>(
     debug!("create address={:?}", address);
     // Ensure there's no existing contract already at the designated address
     if !can_create(state_provider.clone(), &address)? {
-        return Err(err::Error::ContractAlreadyExist);
+        return Err(Error::ContractAlreadyExist);
     }
 
     if request.itype != InterpreterType::EVM {
@@ -360,13 +359,13 @@ fn create<B: DB + 'static>(
             // Ensure code size
             if output.len() as u64 > MAX_CREATE_CODE_SIZE {
                 state_provider.borrow_mut().revert_checkpoint();
-                return Err(err::Error::ExccedMaxCodeSize);
+                return Err(Error::ExccedMaxCodeSize);
             }
             // Pay every byte returnd from CREATE
             let gas_code_deposit: u64 = G_CODE_DEPOSIT * output.len() as u64;
             if gas_left < gas_code_deposit {
                 state_provider.borrow_mut().revert_checkpoint();
-                return Err(err::Error::Evm(evm::Error::OutOfGas));
+                return Err(Error::Evm(evm::Error::OutOfGas));
             }
             let gas_left = gas_left - gas_code_deposit;
             state_provider.borrow_mut().set_code(&address, output.clone())?;
@@ -434,7 +433,7 @@ fn reinterpret_tx<B: DB + 'static>(
 //     context: Context,
 //     config: Config,
 //     tx: Transaction,
-// ) -> Result<InterpreterResult, err::Error> {
+// ) -> Result<InterpreterResult, Error> {
 // }
 
 /// Execute the transaction from transaction pool
@@ -444,27 +443,27 @@ pub fn exec<B: DB + 'static>(
     context: Context,
     config: Config,
     tx: Transaction,
-) -> Result<InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, Error> {
     let request = &reinterpret_tx(tx, state_provider.clone());
     // Ensure gas < block_gas_limit
     if config.block_gas_limit > G_TRANSACTION && request.gas_limit > config.block_gas_limit {
-        return Err(err::Error::ExccedMaxBlockGasLimit);
+        return Err(Error::ExccedMaxBlockGasLimit);
     }
     if config.check_nonce {
         // Ensure nonce
         if request.nonce != state_provider.borrow_mut().nonce(&request.sender)? {
-            return Err(err::Error::InvalidNonce);
+            return Err(Error::InvalidNonce);
         }
     }
     // Ensure gas
     let gas_prepare = get_gas_prepare(request);
     if request.gas_limit < gas_prepare {
-        return Err(err::Error::NotEnoughBaseGas);
+        return Err(Error::NotEnoughBaseGas);
     }
     // Ensure value
     let gas_prepay = request.gas_price * request.gas_limit;
     if state_provider.borrow_mut().balance(&request.sender)? < gas_prepay + request.value {
-        return Err(err::Error::NotEnoughBalance);
+        return Err(Error::NotEnoughBalance);
     }
     // Pay intrinsic gas
     state_provider.borrow_mut().sub_balance(&request.sender, gas_prepay)?;
@@ -546,9 +545,9 @@ pub fn exec_static<B: DB + 'static>(
     evm_context: Context,
     config: Config,
     tx: Transaction,
-) -> Result<InterpreterResult, err::Error> {
+) -> Result<InterpreterResult, Error> {
     if tx.to.is_none() {
-        return Err(err::Error::CreateInStaticCall);
+        return Err(Error::CreateInStaticCall);
     }
     let mut request = reinterpret_tx(tx, state_provider.clone());
     request.read_only = true;
@@ -575,7 +574,7 @@ impl<B: DB + 'static> Executive<B> {
         }
     }
 
-    pub fn exec(&self, context: Context, tx: Transaction) -> Result<InterpreterResult, err::Error> {
+    pub fn exec(&self, context: Context, tx: Transaction) -> Result<InterpreterResult, Error> {
         exec(
             self.block_provider.clone(),
             self.state_provider.clone(),
@@ -591,7 +590,7 @@ impl<B: DB + 'static> Executive<B> {
         context: Context,
         config: Config,
         tx: Transaction,
-    ) -> Result<InterpreterResult, err::Error> {
+    ) -> Result<InterpreterResult, Error> {
         exec_static(
             block_provider,
             Arc::new(RefCell::new(state_provider)),
@@ -601,7 +600,7 @@ impl<B: DB + 'static> Executive<B> {
         )
     }
 
-    pub fn commit(&self) -> Result<H256, err::Error> {
+    pub fn commit(&self) -> Result<H256, Error> {
         self.state_provider.borrow_mut().commit()?;
         Ok(self.state_provider.borrow_mut().root)
     }
