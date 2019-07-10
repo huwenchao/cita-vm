@@ -91,6 +91,32 @@ pub struct InterpreterParams {
     pub depth: u64,
 }
 
+#[allow(non_camel_case_types)]
+#[derive(Eq, PartialEq)]
+pub enum InterpreterType {
+    EVM,
+    RISCV_C,
+    RISCV_JS,
+}
+
+impl InterpreterParams {
+    pub fn interpreter_type(&self) -> InterpreterType {
+        if self
+            .input
+            .starts_with(&[0x72, 0x69, 0x73, 0x63, 0x76, 0x5f, 0x63, 0x00])
+        {
+            return InterpreterType::RISCV_C;
+        }
+        if self
+            .input
+            .starts_with(&[0x72, 0x69, 0x73, 0x63, 0x76, 0x5f, 0x6a, 0x73])
+        {
+            return InterpreterType::RISCV_JS;
+        }
+        InterpreterType::EVM
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum InterpreterResult {
     // Return data, remain gas, logs.

@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use cita_trie::DB;
@@ -9,11 +10,13 @@ use rlp::RlpStream;
 
 use crate::common;
 use crate::common::executive::{
-    BlockDataProvider, Context, Contract, DataProvider, InterpreterParams, InterpreterResult, Store, Transaction,
+    BlockDataProvider, Context, Contract, DataProvider, InterpreterParams, InterpreterResult, InterpreterType, Store,
+    Transaction,
 };
 use crate::err;
 use crate::evm;
 use crate::native;
+use crate::riscv;
 use crate::state::{self, StateObjectInfo};
 
 /// Returns new address created from address and nonce.
@@ -164,8 +167,18 @@ fn call_pure<B: DB + 'static>(
         }
     }
     // Run
-    let mut evm_it = evm::Interpreter::new(evm_context, evm_cfg, Box::new(evm_data_provider), evm_params);
-    Ok(evm_it.run()?)
+
+    match request.interpreter_type() {
+        InterpreterType::EVM => {
+            let mut it = evm::Interpreter::new(evm_context, evm_cfg, Box::new(evm_data_provider), evm_params);
+            Ok(it.run()?)
+        }
+        InterpreterType::RISCV_C => {
+            let mut it = riscv::Interpreter::new(evm_context, evm_params, Rc::new(RefCell::new(evm_data_provider)));
+            Ok(it.run()?)
+        }
+        InterpreterType::RISCV_JS => unimplemented!(),
+    }
 }
 
 /// Function call enters into the specific contract.
@@ -232,6 +245,12 @@ fn create<B: DB + 'static>(
     if !can_create(state_provider.clone(), &address)? {
         return Err(err::Error::ContractAlreadyExist);
     }
+
+    if request.interpreter_type() != InterpreterType::EVM {
+        state_provider.borrow_mut().set_code(&address, request.input.clone())?;
+        return Ok(InterpreterResult::Create(vec![], request.gas_limit, vec![], address));
+    }
+
     // Make a checkpoint here
     state_provider.borrow_mut().checkpoint();
     // Create a new contract
