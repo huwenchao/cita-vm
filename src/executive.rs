@@ -166,8 +166,8 @@ fn call_pure<B: DB + 'static>(
             Err(e) => return Err(e),
         }
     }
-    // Run
 
+    // Run
     match request.interpreter_type() {
         InterpreterType::EVM => {
             let mut it = evm::Interpreter::new(evm_context, evm_cfg, Box::new(evm_data_provider), evm_params);
