@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use ethereum_types::{Address, U256};
 
+use cita_vm::InterpreterType;
 use cita_vm::state::StateObjectInfo;
 
 #[test]
@@ -38,6 +39,7 @@ fn test_state_misc00() {
         gas_limit: 80000,
         gas_price: U256::from(1),
         input: hex::decode("").unwrap(),
+        itype: InterpreterType::EVM,
     };
     let _ = cita_vm::exec(
         block_data_provider.clone(),

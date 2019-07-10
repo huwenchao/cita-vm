@@ -5,12 +5,12 @@ use std::rc::Rc;
 use ckb_vm::instructions::Register;
 use ckb_vm::memory::Memory;
 
-use crate::common::executive::{Context, InterpreterParams};
 use crate::evm::DataProvider;
 use crate::riscv::syscall::common::get_arr;
 use crate::riscv::syscall::convention::{
     SYSCODE_ADDRESS, SYSCODE_BALANCE, SYSCODE_CALLER, SYSCODE_CALLVALUE, SYSCODE_NUMBER, SYSCODE_ORIGIN,
 };
+use crate::{Context, InterpreterParams};
 
 pub struct SyscallEnvironment {
     context: Context,

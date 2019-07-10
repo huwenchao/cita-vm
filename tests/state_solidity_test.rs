@@ -3,6 +3,8 @@ use log::debug;
 use std::cell::RefCell;
 use std::sync::Arc;
 
+use cita_vm::InterpreterType;
+
 #[test]
 fn test_solidity_simplestorage() {
     let _ = env_logger::builder().is_test(true).try_init();
@@ -43,6 +45,7 @@ fn test_solidity_simplestorage() {
         gas_limit: 80000,
         gas_price: U256::from(1),
         input: hex::decode("60fe47b1000000000000000000000000000000000000000000000000000000000000002a").unwrap(),
+        itype: InterpreterType::EVM,
     };
     let _ = cita_vm::exec(
         block_data_provider.clone(),
@@ -62,6 +65,7 @@ fn test_solidity_simplestorage() {
         gas_limit: 80000,
         gas_price: U256::from(1),
         input: hex::decode("6d4ce63c").unwrap(),
+        itype: InterpreterType::EVM,
     };
     let r = cita_vm::exec(
         block_data_provider.clone(),
@@ -90,6 +94,7 @@ fn test_solidity_simplestorage() {
         gas_limit: 80000,           // Give me a large enougth value plz.
         gas_price: U256::from(1),   // Omited due to solidity's check.
         input: hex::decode("6d4ce63c").unwrap(),
+        itype: InterpreterType::EVM,
     };
     let r = cita_vm::exec_static(
         block_data_provider.clone(),
@@ -268,6 +273,7 @@ fn test_solidity_erc20() {
         gas_limit: 8_000_000,
         gas_price: U256::from(1),
         input: hex::decode(code).unwrap(),
+        itype: InterpreterType::EVM,
     };
     let r = cita_vm::exec(
         block_data_provider.clone(),
@@ -292,6 +298,7 @@ fn test_solidity_erc20() {
         gas_limit: 80000,
         gas_price: U256::from(1),
         input: hex::decode("70a082310000000000000000000000001000000000000000000000000000000000000000").unwrap(),
+        itype: InterpreterType::EVM,
     };
     let r = cita_vm::exec(
         block_data_provider.clone(),
@@ -321,6 +328,7 @@ fn test_solidity_erc20() {
 "a9059cbb0000000000000000000000001000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000a",
         )
         .unwrap(),
+        itype: InterpreterType::EVM,
     };
     let r = cita_vm::exec(
         block_data_provider.clone(),
@@ -363,6 +371,7 @@ fn test_solidity_erc20() {
         gas_limit: 80000,
         gas_price: U256::from(1),
         input: hex::decode("70a082310000000000000000000000001000000000000000000000000000000000000000").unwrap(),
+        itype: InterpreterType::EVM,
     };
     let r = cita_vm::exec(
         block_data_provider.clone(),

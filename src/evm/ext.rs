@@ -1,8 +1,9 @@
 use ethereum_types::{Address, H256, U256};
 
-use crate::common::executive::{InterpreterParams, InterpreterResult};
+use crate::common::executive::InterpreterResult;
 use crate::evm::err;
 use crate::evm::opcodes;
+use crate::InterpreterParams;
 
 pub trait DataProvider {
     fn get_balance(&self, address: &Address) -> U256;

@@ -9,15 +9,14 @@ use log::debug;
 use rlp::RlpStream;
 
 use crate::common;
-use crate::common::executive::{
-    BlockDataProvider, Context, Contract, DataProvider, InterpreterParams, InterpreterResult, InterpreterType, Store,
-    Transaction,
-};
+use crate::common::executive::{BlockDataProvider, Context, DataProvider, InterpreterResult, Store, Transaction};
 use crate::err;
 use crate::evm;
 use crate::native;
 use crate::riscv;
 use crate::state::{self, StateObjectInfo};
+use crate::InterpreterType;
+use crate::{Contract, InterpreterParams};
 
 /// Returns new address created from address and nonce.
 pub fn create_address_from_address_and_nonce(address: &Address, nonce: &U256) -> Address {
@@ -168,16 +167,16 @@ fn call_pure<B: DB + 'static>(
     }
 
     // Run
-    match request.interpreter_type() {
+    match request.itype {
         InterpreterType::EVM => {
             let mut it = evm::Interpreter::new(evm_context, evm_cfg, Box::new(evm_data_provider), evm_params);
             Ok(it.run()?)
         }
-        InterpreterType::RISCV_C => {
+        InterpreterType::C => {
             let mut it = riscv::Interpreter::new(evm_context, evm_params, Rc::new(RefCell::new(evm_data_provider)));
             Ok(it.run()?)
         }
-        InterpreterType::RISCV_JS => unimplemented!(),
+        InterpreterType::JS => unimplemented!(),
     }
 }
 
@@ -246,7 +245,7 @@ fn create<B: DB + 'static>(
         return Err(err::Error::ContractAlreadyExist);
     }
 
-    if request.interpreter_type() != InterpreterType::EVM {
+    if request.itype != InterpreterType::EVM {
         let code = request.input.as_slice()[8..].to_vec();
         state_provider.borrow_mut().set_code(&address, code)?;
         return Ok(InterpreterResult::Create(vec![], request.gas_limit, vec![], address));

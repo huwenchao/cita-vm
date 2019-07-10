@@ -67,6 +67,7 @@ fn test_json_file(p: &str) {
                 gas_limit: string_2_u256(str_gas).low_u64(),
                 gas_price: string_2_u256(data.transaction.gas_price.clone()),
                 input: string_2_bytes(str_data),
+                itype: InterpreterType::EVM,
             };
             if !data.transaction.to.is_empty() {
                 tx.to = Some(string_2_address(data.transaction.to.clone()));

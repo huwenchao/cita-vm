@@ -7,6 +7,7 @@ use hashbrown::{HashMap, HashSet};
 
 use crate::evm::InterpreterConf;
 use crate::state::State;
+use crate::InterpreterType;
 
 /// BlockDataProvider provides functions to get block's hash from chain.
 ///
@@ -46,12 +47,6 @@ pub struct Context {
     pub difficulty: U256,
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct Contract {
-    pub code_address: Address,
-    pub code_data: Vec<u8>,
-}
-
 /// An implemention for evm::DataProvider
 pub struct DataProvider<B> {
     pub block_provider: Arc<BlockDataProvider>,
@@ -67,53 +62,6 @@ impl<B: DB> DataProvider<B> {
             state_provider: s,
             store,
         }
-    }
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct InterpreterParams {
-    pub origin: Address,   // Who send the transaction
-    pub sender: Address,   // Who send the call
-    pub receiver: Address, // Who receive the transaction or call
-    pub address: Address,  // Which storage used
-
-    pub value: U256,
-    pub input: Vec<u8>,
-    pub nonce: U256,
-    pub gas_limit: u64,
-    pub gas_price: U256,
-
-    pub read_only: bool,
-    pub contract: Contract,
-    pub extra: H256,
-    pub is_create: bool,
-    pub disable_transfer_value: bool,
-    pub depth: u64,
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Eq, PartialEq)]
-pub enum InterpreterType {
-    EVM,
-    RISCV_C,
-    RISCV_JS,
-}
-
-impl InterpreterParams {
-    pub fn interpreter_type(&self) -> InterpreterType {
-        if self
-            .input
-            .starts_with(&[0x72, 0x69, 0x73, 0x63, 0x76, 0x5f, 0x63, 0x00])
-        {
-            return InterpreterType::RISCV_C;
-        }
-        if self
-            .input
-            .starts_with(&[0x72, 0x69, 0x73, 0x63, 0x76, 0x5f, 0x6a, 0x73])
-        {
-            return InterpreterType::RISCV_JS;
-        }
-        InterpreterType::EVM
     }
 }
 
@@ -175,4 +123,5 @@ pub struct Transaction {
     pub gas_limit: u64,
     pub gas_price: U256,
     pub input: Vec<u8>,
+    pub itype: InterpreterType,
 }

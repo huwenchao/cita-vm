@@ -3,6 +3,8 @@ use std::sync::Arc;
 
 use ethereum_types::{Address, U256};
 
+use cita_vm::InterpreterType;
+
 fn main() {
     env_logger::init();
     let db = Arc::new(cita_vm::state::MemoryDB::new(false));
@@ -41,6 +43,7 @@ fn main() {
         gas_limit: 80000,
         gas_price: U256::from(1),
         input: hex::decode("60fe47b1000000000000000000000000000000000000000000000000000000000000002a").unwrap(),
+        itype: InterpreterType::EVM,
     };
     let r = cita_vm::exec(
         block_data_provider.clone(),
@@ -60,6 +63,7 @@ fn main() {
         gas_limit: 80000,
         gas_price: U256::from(1),
         input: hex::decode("6d4ce63c").unwrap(),
+        itype: InterpreterType::EVM,
     };
     let r = cita_vm::exec(
         block_data_provider.clone(),

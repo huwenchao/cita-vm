@@ -3,11 +3,12 @@ use std::collections::BTreeMap;
 use ethereum_types::{Address, H256, U256};
 
 use crate::common;
-use crate::common::executive::{Context, InterpreterParams, InterpreterResult};
+use crate::common::executive::{Context, InterpreterResult};
 use crate::evm::err;
 use crate::evm::ext;
 use crate::evm::interpreter;
 use crate::evm::opcodes;
+use crate::InterpreterParams;
 
 #[derive(Clone, Default)]
 pub struct Account {

@@ -1,6 +1,7 @@
-use crate::common::executive::{Context, InterpreterParams, InterpreterResult};
+use crate::common::executive::{Context, InterpreterResult};
 use crate::evm;
 use crate::riscv;
+use crate::InterpreterParams;
 use bytes::Bytes;
 use std::cell::RefCell;
 use std::rc::Rc;
