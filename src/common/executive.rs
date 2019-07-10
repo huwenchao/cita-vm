@@ -65,21 +65,6 @@ impl<B: DB> DataProvider<B> {
     }
 }
 
-#[derive(Clone, Debug)]
-pub enum InterpreterResult {
-    // Return data, remain gas, logs.
-    Normal(Vec<u8>, u64, Vec<Log>),
-    // Return data, remain gas
-    Revert(Vec<u8>, u64),
-    // Return data, remain gas, logs, contract address
-    Create(Vec<u8>, u64, Vec<Log>, Address),
-}
-
-// Log is the data struct for LOG0...LOG4.
-// The members are "Address: Address, Topics: Vec<H256>, Body: Vec<u8>"
-#[derive(Clone, Debug)]
-pub struct Log(pub Address, pub Vec<H256>, pub Vec<u8>);
-
 /// Store storages shared datas.
 #[derive(Clone, Default)]
 pub struct Store {

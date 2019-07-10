@@ -3,7 +3,7 @@ use std::cmp;
 use ethereum_types::{H256, U256, U512};
 use log::debug;
 
-use crate::common::executive::{Context, InterpreterResult, Log};
+use crate::common::executive::Context;
 use crate::evm::common;
 use crate::evm::err;
 use crate::evm::ext;
@@ -11,6 +11,7 @@ use crate::evm::memory;
 use crate::evm::opcodes;
 use crate::evm::stack;
 use crate::InterpreterParams;
+use crate::{InterpreterResult, Log};
 
 #[derive(Clone)]
 pub struct InterpreterConf {

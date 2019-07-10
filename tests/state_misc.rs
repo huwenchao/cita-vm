@@ -3,8 +3,8 @@ use std::sync::Arc;
 
 use ethereum_types::{Address, U256};
 
-use cita_vm::InterpreterType;
 use cita_vm::state::StateObjectInfo;
+use cita_vm::InterpreterType;
 
 #[test]
 fn test_state_misc00() {

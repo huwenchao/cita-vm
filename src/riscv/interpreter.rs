@@ -1,12 +1,13 @@
-use crate::common::executive::{Context, InterpreterResult};
-use crate::evm;
-use crate::riscv;
-use crate::InterpreterParams;
-use bytes::Bytes;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use bytes::Bytes;
 use ckb_vm::machine::SupportMachine;
+
+use crate::common::executive::Context;
+use crate::evm;
+use crate::riscv;
+use crate::{InterpreterParams, InterpreterResult};
 
 pub struct Interpreter {
     pub context: Context,

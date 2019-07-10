@@ -9,14 +9,14 @@ use log::debug;
 use rlp::RlpStream;
 
 use crate::common;
-use crate::common::executive::{BlockDataProvider, Context, DataProvider, InterpreterResult, Store, Transaction};
+use crate::common::executive::{BlockDataProvider, Context, DataProvider, Store, Transaction};
 use crate::err;
 use crate::evm;
 use crate::native;
 use crate::riscv;
 use crate::state::{self, StateObjectInfo};
 use crate::InterpreterType;
-use crate::{Contract, InterpreterParams};
+use crate::{Contract, InterpreterParams, InterpreterResult};
 
 /// Returns new address created from address and nonce.
 pub fn create_address_from_address_and_nonce(address: &Address, nonce: &U256) -> Address {
