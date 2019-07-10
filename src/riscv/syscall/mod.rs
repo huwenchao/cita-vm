@@ -1,12 +1,16 @@
 mod common;
+
 mod convention;
+
 mod debug;
+pub use debug::SyscallDebug;
+
 mod environment;
+pub use environment::SyscallEnvironment;
+
 mod ret;
+pub use ret::SyscallRet;
+
 #[allow(clippy::many_single_char_names)]
 mod saveload;
-
-pub use debug::SyscallDebug;
-pub use environment::SyscallEnvironment;
-pub use ret::SyscallRet;
 pub use saveload::SyscallStorage;
