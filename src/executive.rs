@@ -63,6 +63,175 @@ impl<B: DB> DataProvider<B> {
     }
 }
 
+impl<B: DB + 'static> evm::DataProvider for DataProvider<B> {
+    fn get_balance(&self, address: &Address) -> U256 {
+        self.state_provider
+            .borrow_mut()
+            .balance(address)
+            .unwrap_or_else(|_| U256::zero())
+    }
+
+    fn add_refund(&mut self, address: &Address, n: u64) {
+        debug!("ext.add_refund {:?} {}", address, n);
+        self.store
+            .borrow_mut()
+            .refund
+            .entry(*address)
+            .and_modify(|v| *v += n)
+            .or_insert(n);
+    }
+
+    fn sub_refund(&mut self, address: &Address, n: u64) {
+        debug!("ext.sub_refund {:?} {}", address, n);
+        self.store
+            .borrow_mut()
+            .refund
+            .entry(*address)
+            .and_modify(|v| *v -= n)
+            .or_insert(n);
+    }
+
+    fn get_refund(&self, address: &Address) -> u64 {
+        self.store.borrow_mut().refund.get(address).map_or(0, |v| *v)
+    }
+
+    fn get_code_size(&self, address: &Address) -> u64 {
+        self.state_provider.borrow_mut().code_size(address).unwrap_or(0) as u64
+    }
+
+    fn get_code(&self, address: &Address) -> Vec<u8> {
+        self.state_provider
+            .borrow_mut()
+            .code(address)
+            .unwrap_or_else(|_| vec![])
+    }
+
+    fn get_code_hash(&self, address: &Address) -> H256 {
+        self.state_provider
+            .borrow_mut()
+            .code_hash(address)
+            .unwrap_or_else(|_| H256::zero())
+    }
+
+    fn get_block_hash(&self, number: &U256) -> H256 {
+        self.block_provider.get_block_hash(number)
+    }
+
+    fn get_storage(&self, address: &Address, key: &H256) -> H256 {
+        self.state_provider
+            .borrow_mut()
+            .get_storage(address, key)
+            .unwrap_or_else(|_| H256::zero())
+    }
+
+    fn set_storage(&mut self, address: &Address, key: H256, value: H256) {
+        let a = self.get_storage(address, &key);
+        self.store
+            .borrow_mut()
+            .origin
+            .entry(*address)
+            .or_insert_with(HashMap::new)
+            .entry(key)
+            .or_insert(a);
+        if let Err(e) = self.state_provider.borrow_mut().set_storage(address, key, value) {
+            panic!("{}", e);
+        }
+    }
+
+    fn get_storage_origin(&self, address: &Address, key: &H256) -> H256 {
+        self.store.borrow_mut().used(address.clone());
+        match self.store.borrow_mut().origin.get(address) {
+            Some(account) => match account.get(key) {
+                Some(val) => *val,
+                None => self.get_storage(address, key),
+            },
+            None => self.get_storage(address, key),
+        }
+    }
+
+    fn set_storage_origin(&mut self, _address: &Address, _key: H256, _value: H256) {
+        unimplemented!()
+    }
+
+    fn selfdestruct(&mut self, address: &Address, refund_to: &Address) -> bool {
+        if self.store.borrow_mut().selfdestruct.contains(address) {
+            return false;
+        }
+        self.store.borrow_mut().used(refund_to.clone());
+        self.store.borrow_mut().selfdestruct.insert(address.clone());
+        let b = self.get_balance(address);
+
+        if address != refund_to {
+            self.state_provider
+                .borrow_mut()
+                .transfer_balance(address, refund_to, b)
+                .unwrap();
+        } else {
+            // Must ensure that the balance of address which is suicide is zero.
+            self.state_provider.borrow_mut().sub_balance(address, b).unwrap();
+        }
+        true
+    }
+
+    fn sha3(&self, data: &[u8]) -> H256 {
+        From::from(&common::hash::summary(data)[..])
+    }
+
+    fn is_empty(&self, address: &Address) -> bool {
+        self.state_provider.borrow_mut().is_empty(address).unwrap_or(false)
+    }
+
+    fn call(&self, opcode: evm::OpCode, params: InterpreterParams) -> (Result<InterpreterResult, evm::Error>) {
+        match opcode {
+            evm::OpCode::CALL | evm::OpCode::CALLCODE | evm::OpCode::DELEGATECALL | evm::OpCode::STATICCALL => {
+                self.store.borrow_mut().used(params.address);
+                let r = call(
+                    self.block_provider.clone(),
+                    self.state_provider.clone(),
+                    self.store.clone(),
+                    &params,
+                );
+                r.or(Err(evm::Error::CallError))
+            }
+            evm::OpCode::CREATE | evm::OpCode::CREATE2 => {
+                let mut request = params.clone();
+                request.nonce = self
+                    .state_provider
+                    .borrow_mut()
+                    .nonce(&request.sender)
+                    .or(Err(evm::Error::CallError))?;
+                // Must inc nonce for sender
+                // See: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md
+                self.state_provider
+                    .borrow_mut()
+                    .inc_nonce(&request.sender)
+                    .or(Err(evm::Error::CallError))?;
+                let r = match opcode {
+                    evm::OpCode::CREATE => create(
+                        self.block_provider.clone(),
+                        self.state_provider.clone(),
+                        self.store.clone(),
+                        &request,
+                        CreateKind::FromAddressAndNonce,
+                    ),
+                    evm::OpCode::CREATE2 => create(
+                        self.block_provider.clone(),
+                        self.state_provider.clone(),
+                        self.store.clone(),
+                        &request,
+                        CreateKind::FromSaltAndCodeHash,
+                    ),
+                    _ => unimplemented!(),
+                }
+                .or(Err(evm::Error::CallError));
+                debug!("ext.create.result = {:?}", r);
+                r
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
+
 /// Store storages shared datas.
 #[derive(Clone, Default)]
 pub struct Store {
@@ -603,174 +772,5 @@ impl<B: DB + 'static> Executive<B> {
     pub fn commit(&self) -> Result<H256, Error> {
         self.state_provider.borrow_mut().commit()?;
         Ok(self.state_provider.borrow_mut().root)
-    }
-}
-
-impl<B: DB + 'static> evm::DataProvider for DataProvider<B> {
-    fn get_balance(&self, address: &Address) -> U256 {
-        self.state_provider
-            .borrow_mut()
-            .balance(address)
-            .unwrap_or_else(|_| U256::zero())
-    }
-
-    fn add_refund(&mut self, address: &Address, n: u64) {
-        debug!("ext.add_refund {:?} {}", address, n);
-        self.store
-            .borrow_mut()
-            .refund
-            .entry(*address)
-            .and_modify(|v| *v += n)
-            .or_insert(n);
-    }
-
-    fn sub_refund(&mut self, address: &Address, n: u64) {
-        debug!("ext.sub_refund {:?} {}", address, n);
-        self.store
-            .borrow_mut()
-            .refund
-            .entry(*address)
-            .and_modify(|v| *v -= n)
-            .or_insert(n);
-    }
-
-    fn get_refund(&self, address: &Address) -> u64 {
-        self.store.borrow_mut().refund.get(address).map_or(0, |v| *v)
-    }
-
-    fn get_code_size(&self, address: &Address) -> u64 {
-        self.state_provider.borrow_mut().code_size(address).unwrap_or(0) as u64
-    }
-
-    fn get_code(&self, address: &Address) -> Vec<u8> {
-        self.state_provider
-            .borrow_mut()
-            .code(address)
-            .unwrap_or_else(|_| vec![])
-    }
-
-    fn get_code_hash(&self, address: &Address) -> H256 {
-        self.state_provider
-            .borrow_mut()
-            .code_hash(address)
-            .unwrap_or_else(|_| H256::zero())
-    }
-
-    fn get_block_hash(&self, number: &U256) -> H256 {
-        self.block_provider.get_block_hash(number)
-    }
-
-    fn get_storage(&self, address: &Address, key: &H256) -> H256 {
-        self.state_provider
-            .borrow_mut()
-            .get_storage(address, key)
-            .unwrap_or_else(|_| H256::zero())
-    }
-
-    fn set_storage(&mut self, address: &Address, key: H256, value: H256) {
-        let a = self.get_storage(address, &key);
-        self.store
-            .borrow_mut()
-            .origin
-            .entry(*address)
-            .or_insert_with(HashMap::new)
-            .entry(key)
-            .or_insert(a);
-        if let Err(e) = self.state_provider.borrow_mut().set_storage(address, key, value) {
-            panic!("{}", e);
-        }
-    }
-
-    fn get_storage_origin(&self, address: &Address, key: &H256) -> H256 {
-        self.store.borrow_mut().used(address.clone());
-        match self.store.borrow_mut().origin.get(address) {
-            Some(account) => match account.get(key) {
-                Some(val) => *val,
-                None => self.get_storage(address, key),
-            },
-            None => self.get_storage(address, key),
-        }
-    }
-
-    fn set_storage_origin(&mut self, _address: &Address, _key: H256, _value: H256) {
-        unimplemented!()
-    }
-
-    fn selfdestruct(&mut self, address: &Address, refund_to: &Address) -> bool {
-        if self.store.borrow_mut().selfdestruct.contains(address) {
-            return false;
-        }
-        self.store.borrow_mut().used(refund_to.clone());
-        self.store.borrow_mut().selfdestruct.insert(address.clone());
-        let b = self.get_balance(address);
-
-        if address != refund_to {
-            self.state_provider
-                .borrow_mut()
-                .transfer_balance(address, refund_to, b)
-                .unwrap();
-        } else {
-            // Must ensure that the balance of address which is suicide is zero.
-            self.state_provider.borrow_mut().sub_balance(address, b).unwrap();
-        }
-        true
-    }
-
-    fn sha3(&self, data: &[u8]) -> H256 {
-        From::from(&common::hash::summary(data)[..])
-    }
-
-    fn is_empty(&self, address: &Address) -> bool {
-        self.state_provider.borrow_mut().is_empty(address).unwrap_or(false)
-    }
-
-    fn call(&self, opcode: evm::OpCode, params: InterpreterParams) -> (Result<InterpreterResult, evm::Error>) {
-        match opcode {
-            evm::OpCode::CALL | evm::OpCode::CALLCODE | evm::OpCode::DELEGATECALL | evm::OpCode::STATICCALL => {
-                self.store.borrow_mut().used(params.address);
-                let r = call(
-                    self.block_provider.clone(),
-                    self.state_provider.clone(),
-                    self.store.clone(),
-                    &params,
-                );
-                r.or(Err(evm::Error::CallError))
-            }
-            evm::OpCode::CREATE | evm::OpCode::CREATE2 => {
-                let mut request = params.clone();
-                request.nonce = self
-                    .state_provider
-                    .borrow_mut()
-                    .nonce(&request.sender)
-                    .or(Err(evm::Error::CallError))?;
-                // Must inc nonce for sender
-                // See: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md
-                self.state_provider
-                    .borrow_mut()
-                    .inc_nonce(&request.sender)
-                    .or(Err(evm::Error::CallError))?;
-                let r = match opcode {
-                    evm::OpCode::CREATE => create(
-                        self.block_provider.clone(),
-                        self.state_provider.clone(),
-                        self.store.clone(),
-                        &request,
-                        CreateKind::FromAddressAndNonce,
-                    ),
-                    evm::OpCode::CREATE2 => create(
-                        self.block_provider.clone(),
-                        self.state_provider.clone(),
-                        self.store.clone(),
-                        &request,
-                        CreateKind::FromSaltAndCodeHash,
-                    ),
-                    _ => unimplemented!(),
-                }
-                .or(Err(evm::Error::CallError));
-                debug!("ext.create.result = {:?}", r);
-                r
-            }
-            _ => unimplemented!(),
-        }
     }
 }
