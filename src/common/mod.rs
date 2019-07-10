@@ -1,4 +1,3 @@
-pub mod executive;
 pub mod hash;
 
 pub fn clean_0x(s: &str) -> &str {

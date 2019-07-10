@@ -11,7 +11,8 @@ pub mod state;
 mod structure;
 pub use structure::{Context, Contract, InterpreterParams, InterpreterResult, InterpreterType, Log, Transaction};
 
-pub use common::executive::{BlockDataProvider, BlockDataProviderMock, DataProvider, Store};
 pub use err::Error;
-pub use executive::{exec, exec_static, Config, CreateKind, Executive};
+pub use executive::{
+    exec, exec_static, BlockDataProvider, BlockDataProviderMock, Config, CreateKind, DataProvider, Executive, Store,
+};
 pub use state::State;
