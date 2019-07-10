@@ -55,3 +55,16 @@ pub enum InterpreterResult {
     // Return data, remain gas, logs, contract address
     Create(Vec<u8>, u64, Vec<Log>, Address),
 }
+
+/// Transaction struct.
+#[derive(Clone, Debug)]
+pub struct Transaction {
+    pub from: Address,
+    pub to: Option<Address>,
+    pub value: U256,
+    pub nonce: U256,
+    pub gas_limit: u64,
+    pub gas_price: U256,
+    pub input: Vec<u8>,
+    pub itype: InterpreterType,
+}

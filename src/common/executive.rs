@@ -7,7 +7,6 @@ use hashbrown::{HashMap, HashSet};
 
 use crate::evm::InterpreterConf;
 use crate::state::State;
-use crate::InterpreterType;
 
 /// BlockDataProvider provides functions to get block's hash from chain.
 ///
@@ -96,17 +95,4 @@ impl Store {
     pub fn used(&mut self, address: Address) {
         self.inused.insert(address);
     }
-}
-
-/// Transaction struct.
-#[derive(Clone, Debug)]
-pub struct Transaction {
-    pub from: Address,
-    pub to: Option<Address>, // Some for call and None for create.
-    pub value: U256,
-    pub nonce: U256,
-    pub gas_limit: u64,
-    pub gas_price: U256,
-    pub input: Vec<u8>,
-    pub itype: InterpreterType,
 }
