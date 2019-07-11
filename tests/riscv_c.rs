@@ -27,7 +27,7 @@ fn test_riscv_c() {
         nonce: U256::from(1),
         gas_limit: 1000000,
         gas_price: U256::from(1),
-        input: fs::read("./build/riscv_c_sdk").unwrap(),
+        input: fs::read("./build/riscv_c_fibonacci").unwrap(),
         itype: cita_vm::InterpreterType::C,
     };
     let r = vm.exec(context.clone(), tx).unwrap();
