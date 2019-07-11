@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::fs;
 use std::sync::Arc;
 
@@ -9,9 +8,10 @@ use ethereum_types::{Address, U256};
 #[test]
 fn test_riscv_c() {
     let d = Arc::new(cita_trie::MemoryDB::new(false));
-    let mut state_provider = cita_vm::State::new(d).unwrap();
+    let state_provider = cita_vm::State::new(d).unwrap();
 
     let context = cita_vm::Context::default();
+    let cfg = cita_vm::Config::default();
     let tx = cita_vm::Transaction {
         from: Address::from("0x1000000000000000000000000000000000000000"),
         to: None,
@@ -23,7 +23,7 @@ fn test_riscv_c() {
         itype: cita_vm::InterpreterType::EVM,
     };
 
-    let vm = cita_vm::Executive::new(Arc::new(BlockDataProviderMock::default()), state_provider, cfg);
+    let vm = cita_vm::Executive::new(Arc::new(cita_vm::BlockDataProviderMock::default()), state_provider, cfg);
     let r = vm.exec(context, tx);
     println!("{:?}", r);
 }
