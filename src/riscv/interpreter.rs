@@ -25,7 +25,7 @@ impl Interpreter {
 
     pub fn run(&mut self) -> Result<InterpreterResult, ckb_vm::Error> {
         let code = Bytes::from(self.iparams.contract.code_data.clone());
-        let mut args: Vec<Bytes> = if self.iparams.input.len() != 0 {
+        let mut args: Vec<Bytes> = if self.iparams.input.is_empty() {
             self.iparams.input.split(|e| *e == 0x00).map(Bytes::from).collect()
         } else {
             vec![]

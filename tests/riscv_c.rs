@@ -28,7 +28,7 @@ fn test_riscv_c() {
         gas_limit: 1000000,
         gas_price: U256::from(1),
         input: fs::read("./build/riscv_c_sdk").unwrap(),
-        itype: cita_vm::InterpreterType::EVM,
+        itype: cita_vm::InterpreterType::C,
     };
     let r = vm.exec(context.clone(), tx).unwrap();
     println!("{:?}", r);

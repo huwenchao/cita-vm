@@ -493,7 +493,6 @@ fn create<B: DB + 'static>(
 
     // Just save the code at account's code field.
     if request.itype != InterpreterType::EVM {
-        println!("{:?} {:?}", address, request.input);
         state_provider.borrow_mut().set_code(&address, request.input.clone())?;
         return Ok(InterpreterResult::Create(vec![], request.gas_limit, vec![], address));
     }
@@ -594,7 +593,6 @@ fn reinterpret_tx<B: DB + 'static>(
     request.input = tx.input;
     request.nonce = tx.nonce;
     request.itype = tx.itype;
-    println!("{:?}", request);
     request
 }
 
