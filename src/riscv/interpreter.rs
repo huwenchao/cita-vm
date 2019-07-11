@@ -25,7 +25,11 @@ impl Interpreter {
 
     pub fn run(&mut self) -> Result<InterpreterResult, ckb_vm::Error> {
         let code = Bytes::from(self.iparams.contract.code_data.clone());
-        let mut args: Vec<Bytes> = self.iparams.input.split(|e| *e == 0x00).map(Bytes::from).collect();
+        let mut args: Vec<Bytes> = if self.iparams.input.len() != 0 {
+            self.iparams.input.split(|e| *e == 0x00).map(Bytes::from).collect()
+        } else {
+            vec![]
+        };
         args.insert(0, Bytes::from("main"));
 
         let ret_data = Rc::new(RefCell::new(Vec::new()));

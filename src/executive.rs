@@ -592,6 +592,7 @@ fn reinterpret_tx<B: DB + 'static>(
     request.value = tx.value;
     request.input = tx.input;
     request.nonce = tx.nonce;
+    request.itype = tx.itype;
     request
 }
 
