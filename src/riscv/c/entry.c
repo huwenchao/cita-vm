@@ -116,7 +116,7 @@ static duk_ret_t duk_env_blockhash(duk_context *ctx) {
   duk_int_t h = duk_get_int(ctx, -1);
   duk_pop_n(ctx, 1);
 
-  void *hash_ptr = duk_push_buffer(ctx, 20, 0);
+  void *hash_ptr = duk_push_buffer(ctx, 32, 0);
   env_blockhash(h, hash_ptr);
   return 1;
 }

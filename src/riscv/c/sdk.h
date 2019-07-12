@@ -160,7 +160,7 @@ int env_callvalue(uint8_t *v)
 //   code: 0(success)
 int env_blockhash(uint64_t h, uint8_t *hash)
 {
-    return syscall(SYSCODE_BLOCKHASH, &h, hash, 0, 0, 0, 0);
+    return syscall(SYSCODE_BLOCKHASH, h, hash, 0, 0, 0, 0);
 }
 
 // Function env_number loads current block number.

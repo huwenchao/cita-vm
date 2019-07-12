@@ -74,10 +74,7 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallEnvironment {
                 Ok(true)
             }
             SYSCODE_BLOCKHASH => {
-                let h_addr = machine.registers()[ckb_vm::registers::A0].to_usize();
-                let mut h_byte = [0x00u8; 8];
-                h_byte.copy_from_slice(&get_arr(machine, h_addr, 8)?[..]);
-                let h = u64::from_le_bytes(h_byte);
+                let h = machine.registers()[ckb_vm::registers::A0].to_usize();
                 let hash_addr = machine.registers()[ckb_vm::registers::A1].to_usize();
                 let hash_byte = self.data.borrow().get_block_hash(&U256::from(h)).0;
                 machine.memory_mut().store_bytes(hash_addr, &hash_byte)?;

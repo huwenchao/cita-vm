@@ -68,3 +68,11 @@ if (number[31] == 0x06) {
 } else {
     env.debug('Test[x]: env.number')
 }
+
+env.debug('Testing: env.blockhash')
+var blockhash = env.blockhash(7)
+if (blockhash[31] == 0x07) {
+    env.debug('Test[v]: env.blockhash')
+} else {
+    env.debug('Test[x]: env.blockhash')
+}
