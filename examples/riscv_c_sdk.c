@@ -88,8 +88,8 @@ int main(int argc, char* argv[]) {
 
   env_debug("Testing: block hash");
   uint8_t block_hash[32];
-  env_blockhash(7, &block_hash[31]);
-  if (number[31] == 7) {
+  env_blockhash(7, &block_hash[0]);
+  if (block_hash[31] == 7) {
       env_debug("Test[v]: block hash");
   } else {
       env_debug("Test[x]: block hash");
