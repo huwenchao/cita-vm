@@ -9,3 +9,6 @@ pub use interpreter::Interpreter;
 
 mod syscall;
 pub use syscall::{SyscallDebug, SyscallEnvironment, SyscallRet, SyscallStorage};
+
+mod utils;
+pub use utils::combine_parameters;

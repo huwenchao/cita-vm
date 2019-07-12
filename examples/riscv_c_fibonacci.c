@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "sdk.h"
 
 void encode_u64(uint8_t* buffer, uint64_t n)
@@ -29,6 +30,7 @@ int fibonacci(int n)
 }
 
 int main(int argc, char* argv[]) {
-    int r = fibonacci(10);
+    int n = atoi(argv[1]);
+    int r = fibonacci(n);
     return return_u64(r);
 }

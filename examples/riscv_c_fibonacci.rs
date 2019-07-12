@@ -5,8 +5,7 @@ use cita_trie;
 use cita_vm;
 use ethereum_types::{Address, U256};
 
-#[test]
-fn test_riscv_c() {
+fn main() {
     let d = Arc::new(cita_trie::MemoryDB::new(false));
     let mut state_provider = cita_vm::State::new(d).unwrap();
     state_provider.new_contract(
@@ -45,7 +44,7 @@ fn test_riscv_c() {
         nonce: U256::from(2),
         gas_limit: 1000000,
         gas_price: U256::from(1),
-        input: vec![],
+        input: cita_vm::riscv::combine_parameters(vec!["10".into()]),
         itype: cita_vm::InterpreterType::C,
     };
     let r = vm.exec(context.clone(), tx).unwrap();
