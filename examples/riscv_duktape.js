@@ -84,4 +84,3 @@ if (number[31] == 0x06) {
 } else {
     env.debug('Test[x]: env.number')
 }
-
