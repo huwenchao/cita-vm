@@ -121,6 +121,12 @@ static duk_ret_t duk_env_blockhash(duk_context *ctx) {
   return 1;
 }
 
+static duk_ret_t duk_env_coinbase(duk_context *ctx) {
+  void *ptr = duk_push_buffer(ctx, 20, 0);
+  env_coinbase(ptr);
+  return 1;
+}
+
 static duk_ret_t duk_env_number(duk_context *ctx) {
   void *v_ptr = duk_push_buffer(ctx, 32, 0);
   env_number(v_ptr);
@@ -337,6 +343,9 @@ void env_init(duk_context *ctx) {
 
   duk_push_c_function(ctx, duk_env_blockhash, 1);
   duk_put_prop_string(ctx, -2, "blockhash");
+
+  duk_push_c_function(ctx, duk_env_coinbase, 0);
+  duk_put_prop_string(ctx, -2, "coinbase");
 
   duk_push_c_function(ctx, duk_env_number, 0);
   duk_put_prop_string(ctx, -2, "number");

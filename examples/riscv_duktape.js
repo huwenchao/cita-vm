@@ -61,6 +61,22 @@ if (callvalue[31] == 0x05) {
     env.debug('Test[x]: env.callvalue')
 }
 
+env.debug('Testing: env.blockhash')
+var blockhash = env.blockhash(7)
+if (blockhash[31] == 0x07) {
+    env.debug('Test[v]: env.blockhash')
+} else {
+    env.debug('Test[x]: env.blockhash')
+}
+
+env.debug('Testing: env.coinbase')
+var addr = env.coinbase()
+if (addr[19] == 0x08) {
+    env.debug('Test[v]: env.coinbase')
+} else {
+    env.debug('Test[x]: env.coinbase')
+}
+
 env.debug('Testing: env.number')
 var number = env.number()
 if (number[31] == 0x06) {
@@ -69,10 +85,3 @@ if (number[31] == 0x06) {
     env.debug('Test[x]: env.number')
 }
 
-env.debug('Testing: env.blockhash')
-var blockhash = env.blockhash(7)
-if (blockhash[31] == 0x07) {
-    env.debug('Test[v]: env.blockhash')
-} else {
-    env.debug('Test[x]: env.blockhash')
-}

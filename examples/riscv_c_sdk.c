@@ -77,15 +77,6 @@ int main(int argc, char* argv[]) {
       env_debug("Test[x]: callvalue");
   }
 
-  env_debug("Testing: number");
-  uint8_t number[32];
-  env_number(&number[0]);
-  if (number[31] == 6) {
-      env_debug("Test[v]: number");
-  } else {
-      env_debug("Test[x]: number");
-  }
-
   env_debug("Testing: block hash");
   uint8_t block_hash[32];
   env_blockhash(7, &block_hash[0]);
@@ -93,6 +84,24 @@ int main(int argc, char* argv[]) {
       env_debug("Test[v]: block hash");
   } else {
       env_debug("Test[x]: block hash");
+  }
+
+  env_debug("Testing: coinbase");
+  uint8_t coinbase[20];
+  env_coinbase(&coinbase[0]);
+  if (coinbase[19] == 0x08) {
+      env_debug("Test[v]: coinbase");
+  } else {
+      env_debug("Test[x]: coinbase");
+  }
+
+  env_debug("Testing: number");
+  uint8_t number[32];
+  env_number(&number[0]);
+  if (number[31] == 6) {
+      env_debug("Test[v]: number");
+  } else {
+      env_debug("Test[x]: number");
   }
 
   return 0;

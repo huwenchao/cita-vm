@@ -42,7 +42,7 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 // #define RETURNDATACOPY 3004
 
 #define SYSCODE_BLOCKHASH 3010
-// #define COINBASE 3011
+#define SYSCODE_COINBASE 3011
 // #define TIMESTAMP 3012
 #define SYSCODE_NUMBER 3013
 // #define DIFFICULTY 3014
@@ -161,6 +161,16 @@ int env_callvalue(uint8_t *v)
 int env_blockhash(uint64_t h, uint8_t *hash)
 {
     return syscall(SYSCODE_BLOCKHASH, h, hash, 0, 0, 0, 0);
+}
+
+// Function env_coinbase loads current coinbase address.
+// Params:
+//   addr: a pointer to a buffer in VM memory space denoting where the address located at.
+// Return:
+//   code: 0(success)
+int env_coinbase(uint8_t *addr)
+{
+    return syscall(SYSCODE_COINBASE, addr, 0, 0, 0, 0, 0);
 }
 
 // Function env_number loads current block number.
