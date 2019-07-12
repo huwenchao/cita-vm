@@ -4,11 +4,13 @@ use std::rc::Rc;
 
 use ckb_vm::instructions::Register;
 use ckb_vm::memory::Memory;
+use ethereum_types::U256;
 
 use crate::evm::DataProvider;
 use crate::riscv::syscall::common::get_arr;
 use crate::riscv::syscall::convention::{
-    SYSCODE_ADDRESS, SYSCODE_BALANCE, SYSCODE_CALLER, SYSCODE_CALLVALUE, SYSCODE_NUMBER, SYSCODE_ORIGIN,
+    SYSCODE_ADDRESS, SYSCODE_BALANCE, SYSCODE_BLOCKHASH, SYSCODE_CALLER, SYSCODE_CALLVALUE, SYSCODE_NUMBER,
+    SYSCODE_ORIGIN,
 };
 use crate::{Context, InterpreterParams};
 
@@ -68,6 +70,17 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallEnvironment {
                 let mut v_byte = [0x00u8; 32];
                 self.iparams.value.to_big_endian(&mut v_byte);
                 machine.memory_mut().store_bytes(addr, &v_byte)?;
+                machine.set_register(ckb_vm::registers::A0, Mac::REG::from_u8(0));
+                Ok(true)
+            }
+            SYSCODE_BLOCKHASH => {
+                let h_addr = machine.registers()[ckb_vm::registers::A0].to_usize();
+                let mut h_byte = [0x00u8; 8];
+                h_byte.copy_from_slice(&get_arr(machine, h_addr, 8)?[..]);
+                let h = u64::from_le_bytes(h_byte);
+                let hash_addr = machine.registers()[ckb_vm::registers::A1].to_usize();
+                let hash_byte = self.data.borrow().get_block_hash(&U256::from(h)).0;
+                machine.memory_mut().store_bytes(hash_addr, &hash_byte)?;
                 machine.set_register(ckb_vm::registers::A0, Mac::REG::from_u8(0));
                 Ok(true)
             }

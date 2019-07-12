@@ -55,8 +55,8 @@ impl DataProvider for DataProviderMock {
             .map_or(H256::zero(), |v| self.sha3(v.code.as_slice()))
     }
 
-    fn get_block_hash(&self, _: &U256) -> H256 {
-        H256::zero()
+    fn get_block_hash(&self, n: &U256) -> H256 {
+        H256::from(n)
     }
 
     fn get_storage(&self, address: &Address, key: &H256) -> H256 {

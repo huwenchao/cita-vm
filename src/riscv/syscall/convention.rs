@@ -7,4 +7,5 @@ pub const SYSCODE_BALANCE: i32 = 2191;
 pub const SYSCODE_ORIGIN: i32 = 2192;
 pub const SYSCODE_CALLER: i32 = 2193;
 pub const SYSCODE_CALLVALUE: i32 = 2194;
+pub const SYSCODE_BLOCKHASH: i32 = 3010;
 pub const SYSCODE_NUMBER: i32 = 3013;

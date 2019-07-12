@@ -41,7 +41,7 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 // #define RETURNDATASIZE 3003
 // #define RETURNDATACOPY 3004
 
-// #define BLOCKHASH 3010
+#define SYSCODE_BLOCKHASH 3010
 // #define COINBASE 3011
 // #define TIMESTAMP 3012
 #define SYSCODE_NUMBER 3013
@@ -151,6 +151,16 @@ int env_caller(uint8_t *addr)
 int env_callvalue(uint8_t *v)
 {
     return syscall(SYSCODE_CALLVALUE, v, 0, 0, 0, 0, 0);
+}
+
+// Function env_blockhash loads specific block's hash.
+// Params:
+//   v: a pointer to a 32 bytes buffer where the hash located at.
+// Return:
+//   code: 0(success)
+int env_blockhash(uint64_t h, uint8_t *hash)
+{
+    return syscall(SYSCODE_BLOCKHASH, &h, hash, 0, 0, 0, 0);
 }
 
 // Function env_number loads current block number.
