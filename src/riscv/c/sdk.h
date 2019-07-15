@@ -46,7 +46,7 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 #define SYSCODE_TIMESTAMP 3012
 #define SYSCODE_NUMBER 3013
 #define SYSCODE_DIFFICULTY 3014
-// #define GASLIMIT3015
+#define SYSCODE_GASLIMIT 3015
 
 
 // Function env_debug accepts a string that contains the text to be written to stdout(It depends on the VM).
@@ -201,4 +201,14 @@ int env_number(uint8_t *number)
 int env_difficulty(uint8_t *difficulty)
 {
     return syscall(SYSCODE_DIFFICULTY, difficulty, 0, 0, 0, 0, 0);
+}
+
+// Function env_gaslimit loads current block gaslimit.
+// Params:
+//   time: a pointer to a uint64_t in VM memory space denoting where the gaslimit located at.
+// Return:
+//   code: 0(success)
+int env_gaslimit(uint64_t *gaslimit)
+{
+    return syscall(SYSCODE_GASLIMIT, gaslimit, 0, 0, 0, 0, 0);
 }
