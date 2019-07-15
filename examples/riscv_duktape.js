@@ -77,6 +77,14 @@ if (addr[19] == 0x08) {
     env.debug('Test[x]: env.coinbase')
 }
 
+env.debug('Testing: env.timestamp')
+var timestamp = env.timestamp()
+if (timestamp == 0x09) {
+    env.debug('Test[v]: env.timestamp')
+} else {
+    env.debug('Test[x]: env.timestamp')
+}
+
 env.debug('Testing: env.number')
 var number = env.number()
 if (number[31] == 0x06) {

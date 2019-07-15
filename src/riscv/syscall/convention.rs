@@ -9,4 +9,5 @@ pub const SYSCODE_CALLER: i32 = 2193;
 pub const SYSCODE_CALLVALUE: i32 = 2194;
 pub const SYSCODE_BLOCKHASH: i32 = 3010;
 pub const SYSCODE_COINBASE: i32 = 3011;
+pub const SYSCODE_TIMESTAMP: i32 = 3012;
 pub const SYSCODE_NUMBER: i32 = 3013;

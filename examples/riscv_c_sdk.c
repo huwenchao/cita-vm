@@ -32,9 +32,9 @@ int main(int argc, char* argv[]) {
   uint8_t addr[20];
   env_address(&addr[0]);
   if (addr[19] == 0x01) {
-      env_debug("Test[v]: address");
+    env_debug("Test[v]: address");
   } else {
-      env_debug("Test[x]: address");
+    env_debug("Test[x]: address");
   }
 
   env_debug("Testing: balance");
@@ -54,54 +54,63 @@ int main(int argc, char* argv[]) {
   uint8_t origin[20];
   env_origin(&origin[0]);
   if (origin[19] == 0x02) {
-      env_debug("Test[v]: origin");
+    env_debug("Test[v]: origin");
   } else {
-      env_debug("Test[x]: origin");
+    env_debug("Test[x]: origin");
   }
 
   env_debug("Testing: caller");
   uint8_t caller[20];
   env_caller(&caller[0]);
   if (caller[19] == 0x03) {
-      env_debug("Test[v]: caller");
+    env_debug("Test[v]: caller");
   } else {
-      env_debug("Test[x]: caller");
+    env_debug("Test[x]: caller");
   }
 
   env_debug("Testing: callvalue");
   uint8_t callvalue[32];
   env_callvalue(&callvalue[0]);
   if (callvalue[31] == 5) {
-      env_debug("Test[v]: callvalue");
+    env_debug("Test[v]: callvalue");
   } else {
-      env_debug("Test[x]: callvalue");
+    env_debug("Test[x]: callvalue");
   }
 
   env_debug("Testing: block hash");
   uint8_t block_hash[32];
   env_blockhash(7, &block_hash[0]);
   if (block_hash[31] == 7) {
-      env_debug("Test[v]: block hash");
+    env_debug("Test[v]: block hash");
   } else {
-      env_debug("Test[x]: block hash");
+    env_debug("Test[x]: block hash");
   }
 
   env_debug("Testing: coinbase");
   uint8_t coinbase[20];
   env_coinbase(&coinbase[0]);
   if (coinbase[19] == 0x08) {
-      env_debug("Test[v]: coinbase");
+    env_debug("Test[v]: coinbase");
   } else {
-      env_debug("Test[x]: coinbase");
+    env_debug("Test[x]: coinbase");
+  }
+
+  env_debug("Testing: timestamp");
+  uint64_t timestamp;
+  env_timestamp(&timestamp);
+  if (timestamp == 0x09) {
+    env_debug("Test[v]: timestamp");
+  } else {
+    env_debug("Test[x]: timestamp");
   }
 
   env_debug("Testing: number");
   uint8_t number[32];
   env_number(&number[0]);
-  if (number[31] == 6) {
-      env_debug("Test[v]: number");
+  if (number[31] == 0x06) {
+    env_debug("Test[v]: number");
   } else {
-      env_debug("Test[x]: number");
+    env_debug("Test[x]: number");
   }
 
   return 0;

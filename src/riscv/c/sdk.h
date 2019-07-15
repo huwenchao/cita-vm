@@ -43,7 +43,7 @@ __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, lon
 
 #define SYSCODE_BLOCKHASH 3010
 #define SYSCODE_COINBASE 3011
-// #define TIMESTAMP 3012
+#define SYSCODE_TIMESTAMP 3012
 #define SYSCODE_NUMBER 3013
 // #define DIFFICULTY 3014
 // #define GASLIMIT3015
@@ -171,6 +171,16 @@ int env_blockhash(uint64_t h, uint8_t *hash)
 int env_coinbase(uint8_t *addr)
 {
     return syscall(SYSCODE_COINBASE, addr, 0, 0, 0, 0, 0);
+}
+
+// Function env_timestamp loads current timestamp.
+// Params:
+//   time: a pointer to a uint64_t in VM memory space denoting where the timestamp located at.
+// Return:
+//   code: 0(success)
+int env_timestamp(uint64_t *time)
+{
+    return syscall(SYSCODE_TIMESTAMP, time, 0, 0, 0, 0, 0);
 }
 
 // Function env_number loads current block number.

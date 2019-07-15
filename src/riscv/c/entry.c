@@ -127,6 +127,13 @@ static duk_ret_t duk_env_coinbase(duk_context *ctx) {
   return 1;
 }
 
+static duk_ret_t duk_env_timestamp(duk_context *ctx) {
+  uint64_t timestamp;
+  env_timestamp(&timestamp);
+  duk_push_int(ctx, timestamp);
+  return 1;
+}
+
 static duk_ret_t duk_env_number(duk_context *ctx) {
   void *v_ptr = duk_push_buffer(ctx, 32, 0);
   env_number(v_ptr);
@@ -347,9 +354,11 @@ void env_init(duk_context *ctx) {
   duk_push_c_function(ctx, duk_env_coinbase, 0);
   duk_put_prop_string(ctx, -2, "coinbase");
 
+  duk_push_c_function(ctx, duk_env_timestamp, 0);
+  duk_put_prop_string(ctx, -2, "timestamp");
+
   duk_push_c_function(ctx, duk_env_number, 0);
   duk_put_prop_string(ctx, -2, "number");
-
 
 //   duk_push_c_function(ctx, duk_ckb_load_tx_hash, 0);
 //   duk_put_prop_string(ctx, -2, "load_tx_hash");
