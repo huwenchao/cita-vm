@@ -92,3 +92,11 @@ if (number[31] == 0x06) {
 } else {
     env.debug('Test[x]: env.number')
 }
+
+env.debug('Testing: env.difficulty')
+var difficulty = env.difficulty()
+if (difficulty[31] == 0x0a) {
+    env.debug('Test[v]: env.difficulty')
+} else {
+    env.debug('Test[x]: env.difficulty')
+}

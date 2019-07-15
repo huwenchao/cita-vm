@@ -29,6 +29,7 @@ fn main() {
     vm_context.number = ethereum_types::U256::from(6);
     vm_context.coinbase = ethereum_types::Address::from("0x0000000000000000000000000000000000000008");
     vm_context.timestamp = 9;
+    vm_context.difficulty = ethereum_types::U256::from(0x0a);
 
     // Initialize storage
     let state = Rc::new(RefCell::new(cita_vm::evm::extmock::DataProviderMock::default()));

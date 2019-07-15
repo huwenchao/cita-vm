@@ -113,5 +113,14 @@ int main(int argc, char* argv[]) {
     env_debug("Test[x]: number");
   }
 
+  env_debug("Testing: difficulty");
+  uint8_t difficulty[32];
+  env_difficulty(&difficulty[0]);
+  if (difficulty[31] == 0x0a) {
+    env_debug("Test[v]: difficulty");
+  } else {
+    env_debug("Test[x]: difficulty");
+  }
+
   return 0;
 }

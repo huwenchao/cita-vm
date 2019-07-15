@@ -10,7 +10,7 @@ use crate::evm::DataProvider;
 use crate::riscv::syscall::common::get_arr;
 use crate::riscv::syscall::convention::{
     SYSCODE_ADDRESS, SYSCODE_BALANCE, SYSCODE_BLOCKHASH, SYSCODE_CALLER, SYSCODE_CALLVALUE, SYSCODE_COINBASE,
-    SYSCODE_NUMBER, SYSCODE_ORIGIN, SYSCODE_TIMESTAMP,
+    SYSCODE_NUMBER, SYSCODE_ORIGIN, SYSCODE_TIMESTAMP,SYSCODE_DIFFICULTY
 };
 use crate::{Context, InterpreterParams};
 
@@ -98,6 +98,14 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallEnvironment {
                 let addr = machine.registers()[ckb_vm::registers::A0].to_usize();
                 let mut v_byte = [0x00u8; 32];
                 self.context.number.to_big_endian(&mut v_byte);
+                machine.memory_mut().store_bytes(addr, &v_byte)?;
+                machine.set_register(ckb_vm::registers::A0, Mac::REG::from_u8(0));
+                Ok(true)
+            }
+            SYSCODE_DIFFICULTY => {
+                let addr = machine.registers()[ckb_vm::registers::A0].to_usize();
+                let mut v_byte = [0x00u8; 32];
+                self.context.difficulty.to_big_endian(&mut v_byte);
                 machine.memory_mut().store_bytes(addr, &v_byte)?;
                 machine.set_register(ckb_vm::registers::A0, Mac::REG::from_u8(0));
                 Ok(true)

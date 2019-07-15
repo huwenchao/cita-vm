@@ -140,6 +140,12 @@ static duk_ret_t duk_env_number(duk_context *ctx) {
   return 1;
 }
 
+static duk_ret_t duk_env_difficulty(duk_context *ctx) {
+  void *v_ptr = duk_push_buffer(ctx, 32, 0);
+  env_difficulty(v_ptr);
+  return 1;
+}
+
 // typedef int (*load_hash_function)(void *, volatile uint64_t *, size_t);
 // typedef int (*load_function)(void *, volatile uint64_t *, size_t, size_t,
 //                              size_t);
@@ -359,6 +365,9 @@ void env_init(duk_context *ctx) {
 
   duk_push_c_function(ctx, duk_env_number, 0);
   duk_put_prop_string(ctx, -2, "number");
+
+  duk_push_c_function(ctx, duk_env_difficulty, 0);
+  duk_put_prop_string(ctx, -2, "difficulty");
 
 //   duk_push_c_function(ctx, duk_ckb_load_tx_hash, 0);
 //   duk_put_prop_string(ctx, -2, "load_tx_hash");
