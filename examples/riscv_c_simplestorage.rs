@@ -1,10 +1,7 @@
-use std::cell::RefCell;
+use std::fs;
 use std::sync::Arc;
 
 use ethereum_types::{Address, U256};
-
-use cita_vm::state::StateObjectInfo;
-use cita_vm::InterpreterType;
 
 pub struct FakeVM {
     pub account1: Address,
@@ -34,60 +31,53 @@ impl FakeVM {
 }
 
 fn main() {
-    let mut vm = FakeVM::new();
+    let vm = FakeVM::new();
 
-    // let db = Arc::new(cita_vm::state::MemoryDB::new(false));
-    // let mut state = cita_vm::state::State::new(db.clone()).unwrap();
+    let tx = cita_vm::Transaction {
+        from: vm.account1.clone(),
+        to: None,
+        value: U256::from(0),
+        nonce: U256::from(1),
+        gas_limit: 1_000_000,
+        gas_price: U256::from(1),
+        input: fs::read("./build/riscv_c_simplestorage").unwrap(),
+        itype: cita_vm::InterpreterType::C,
+    };
+    let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
+    println!("{:?}", r);
+    let contract_address = match r {
+        cita_vm::InterpreterResult::Create(_, _, _, a) => a,
+        _ => unreachable!(),
+    };
 
-    // state.new_contract(
-    //     &Address::from("0x0000000000000000000000000000000000000001"),
-    //     U256::from(100_000_000_000),
-    //     U256::from(1),
-    //     vec![],
-    // );
-    // state.new_contract(
-    //     &Address::from("0x0000000000000000000000000000000000000002"),
-    //     U256::from(200_000_000_000),
-    //     U256::from(1),
-    //     vec![],
-    // );
-    // state.commit().unwrap();
-    // let root0 = state.root;
+    let tx = cita_vm::Transaction {
+        from: vm.account1.clone(),
+        to: Some(contract_address),
+        value: U256::from(0),
+        nonce: U256::from(2),
+        gas_limit: 1_000_000,
+        gas_price: U256::from(1),
+        input: cita_vm::riscv::combine_parameters(
+            vec!["set", "everything", "42"]
+                .iter()
+                .map(|e| String::from(*e))
+                .collect(),
+        ),
+        itype: cita_vm::InterpreterType::C,
+    };
+    let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
+    println!("{:?}", r);
 
-    // let block_data_provider: Arc<cita_vm::BlockDataProvider> = Arc::new(cita_vm::BlockDataProviderMock::default());
-    // let state_data_provider = Arc::new(RefCell::new(state));
-    // let context = cita_vm::Context::default();
-    // let config = cita_vm::Config::default();
-
-    // let tx = cita_vm::Transaction {
-    //     from: Address::from("0x1000000000000000000000000000000000000000"),
-    //     to: Some(Address::from("0x2000000000000000000000000000000000000000")),
-    //     value: U256::from(5),
-    //     nonce: U256::from(1),
-    //     gas_limit: 80000,
-    //     gas_price: U256::from(1),
-    //     input: hex::decode("").unwrap(),
-    //     itype: InterpreterType::EVM,
-    // };
-    // let _ = cita_vm::exec(
-    //     block_data_provider.clone(),
-    //     state_data_provider.clone(),
-    //     context.clone(),
-    //     config.clone(),
-    //     tx,
-    // );
-    // state_data_provider.borrow_mut().commit().unwrap();
-
-    // assert_eq!(
-    //     state_data_provider
-    //         .borrow_mut()
-    //         .balance(&Address::from("0x2000000000000000000000000000000000000000"))
-    //         .unwrap(),
-    //     U256::from(100_005)
-    // );
-    // let mut ur_state = cita_vm::state::State::from_existing(db, root0).unwrap();
-    // let b = ur_state
-    //     .balance(&Address::from("0x2000000000000000000000000000000000000000"))
-    //     .unwrap();
-    // assert_eq!(b, U256::from(100_000));
+    let tx = cita_vm::Transaction {
+        from: vm.account1.clone(),
+        to: Some(contract_address),
+        value: U256::from(0),
+        nonce: U256::from(3),
+        gas_limit: 1_000_000,
+        gas_price: U256::from(1),
+        input: cita_vm::riscv::combine_parameters(vec!["get", "everything"].iter().map(|e| String::from(*e)).collect()),
+        itype: cita_vm::InterpreterType::C,
+    };
+    let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
+    println!("{:?}", r);
 }

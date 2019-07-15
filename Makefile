@@ -27,6 +27,12 @@ riscv/example/c_fibonacci:
 riscv/example/c_fibonacci/docker:
 	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/example/c_fibonacci"
 
+riscv/example/c_simplestorage:
+	$(CC) -I./src/riscv/c/ -o ./build/riscv_c_simplestorage ./examples/riscv_c_simplestorage.c
+
+riscv/example/c_simplestorage/docker:
+	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/example/c_simplestorage"
+
 riscv/duktape:
 	$(CC) $(APP_CFLAGS) src/riscv/c/entry.c -c -o build/entry.o
 	$(CC) $(APP_CFLAGS) src/riscv/duktape/duktape.c -c -o build/duktape.o
@@ -35,7 +41,10 @@ riscv/duktape:
 riscv/duktape/docker:
 	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/duktape"
 
-riscv/all: riscv/example/c_sdk/docker riscv/example/c_fibonacci/docker riscv/duktape/docker
+riscv/all: riscv/example/c_sdk/docker \
+	riscv/example/c_fibonacci/docker \
+	riscv/example/c_simplestorage/docker \
+	riscv/duktape/docker
 
 .PHONY: \
 	evm/testdata \
