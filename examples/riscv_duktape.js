@@ -100,3 +100,9 @@ if (difficulty[31] == 0x0a) {
 } else {
     pvm.debug('Test[x]: pvm.difficulty')
 }
+
+function main(argc, argv) {
+    pvm.debug(argc)
+    pvm.debug(argv)
+    pvm.debug('Main')
+}

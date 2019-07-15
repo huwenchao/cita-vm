@@ -422,7 +422,10 @@ fn call_pure<B: DB + 'static>(
             let mut it = riscv::Interpreter::new(context, iparams, Rc::new(RefCell::new(data_provider)));
             Ok(it.run()?)
         }
-        InterpreterType::JS => unimplemented!(),
+        InterpreterType::JS => {
+            let mut it = riscv::Interpreter::new(context, iparams, Rc::new(RefCell::new(data_provider)));
+            Ok(it.run()?)
+        }
     }
 }
 

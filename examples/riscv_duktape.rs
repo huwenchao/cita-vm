@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::io::Read;
+use std::fs;
 use std::rc::Rc;
 
 use bytes::Bytes;
@@ -9,10 +9,7 @@ use hashbrown::HashMap;
 
 fn main() {
     // Load binary
-    let mut file = std::fs::File::open("./build/duktape").unwrap();
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer).unwrap();
-    let buffer: Bytes = buffer.into();
+    let buffer: Bytes = fs::read("./build/duktape").unwrap().into();
 
     // Load js
     let js = std::fs::read("./examples/riscv_duktape.js").unwrap();

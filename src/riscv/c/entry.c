@@ -187,11 +187,28 @@ int main(int argc, char *argv[]) {
 
   if (argc == 1) {
     return 1;
-  } else if (argc == 2) {
-    duk_eval_string(ctx, argv[1]);
-    duk_pop(ctx); /* pop eval result */
   } else {
-    /* TODO: load source from one of the dep */
+    duk_eval_string(ctx, argv[1]);
+
+    char s[1024];
+    strcpy(s, "main(");
+    itoa(argc - 1, &s[5], 10);
+    strcat(s, ", ");
+    strcat(s, "new Array(\"main\"");
+    if (argc != 2) {
+        for (int i = 2; i < argc - 1; i++)
+        {
+            strcat(s, argv[i]);
+            strcat(s, ",");
+        }
+        strcat (s, argv[argc - 1]);
+    }
+    strcat(s, ")");
+    strcat(s, ")");
+
+    pvm_debug(s);
+    duk_eval_string(ctx, s);
+    duk_pop(ctx);
   }
   duk_destroy_heap(ctx);
 
