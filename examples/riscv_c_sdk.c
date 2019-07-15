@@ -1,125 +1,125 @@
 #include <string.h>
 
-#include "sdk.h"
+#include "pvm.h"
 
 int main(int argc, char* argv[]) {
-  env_debug("Testing: debug");
-  env_debug("Test[v]: debug");
+  pvm_debug("Testing: debug");
+  pvm_debug("Test[v]: debug");
 
-  env_debug("Testing: ret");
+  pvm_debug("Testing: ret");
   uint8_t *buffer_ret = (uint8_t *)"Test: ret";
-  env_ret(&buffer_ret[0], strlen(buffer_ret));
-  env_debug("Test[v]: ret");
+  pvm_ret(&buffer_ret[0], strlen(buffer_ret));
+  pvm_debug("Test[v]: ret");
 
-  env_debug("Testing: save");
+  pvm_debug("Testing: save");
   uint8_t *buffer_save_k = (uint8_t *)"Test: save_k";
   uint8_t *buffer_save_v = (uint8_t *)"Test: save_v";
-  env_save(&buffer_save_k[0], strlen(buffer_save_k), &buffer_save_v[0], strlen(buffer_save_v));
-  env_debug("Test[v]: save");
+  pvm_save(&buffer_save_k[0], strlen(buffer_save_k), &buffer_save_v[0], strlen(buffer_save_v));
+  pvm_debug("Test[v]: save");
 
-  env_debug("Testing: load");
+  pvm_debug("Testing: load");
   uint8_t buffer_load_v[20];
   size_t sz;
-  env_load(&buffer_save_k[0], strlen(buffer_save_k), &buffer_load_v[0], 20, &sz);
+  pvm_load(&buffer_save_k[0], strlen(buffer_save_k), &buffer_load_v[0], 20, &sz);
   const char* s = buffer_load_v;
   if ((strcmp("Test: save_v", s) == 0) && (sz == 12)) {
-    env_debug("Test[v]: load");
+    pvm_debug("Test[v]: load");
   } else {
-    env_debug("Test[x]: load");
+    pvm_debug("Test[x]: load");
   }
 
-  env_debug("Testing: address");
+  pvm_debug("Testing: address");
   uint8_t addr[20];
-  env_address(&addr[0]);
+  pvm_address(&addr[0]);
   if (addr[19] == 0x01) {
-    env_debug("Test[v]: address");
+    pvm_debug("Test[v]: address");
   } else {
-    env_debug("Test[x]: address");
+    pvm_debug("Test[x]: address");
   }
 
-  env_debug("Testing: balance");
+  pvm_debug("Testing: balance");
   uint8_t account1[20] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
   };
   uint8_t v[32];
-  env_balance(&account1[0], &v[0]);
+  pvm_balance(&account1[0], &v[0]);
   if (v[31] == 10) {
-    env_debug("Test[v]: balance");
+    pvm_debug("Test[v]: balance");
   } else {
-    env_debug("Test[x]: balance");
+    pvm_debug("Test[x]: balance");
   }
 
-  env_debug("Testing: origin");
+  pvm_debug("Testing: origin");
   uint8_t origin[20];
-  env_origin(&origin[0]);
+  pvm_origin(&origin[0]);
   if (origin[19] == 0x02) {
-    env_debug("Test[v]: origin");
+    pvm_debug("Test[v]: origin");
   } else {
-    env_debug("Test[x]: origin");
+    pvm_debug("Test[x]: origin");
   }
 
-  env_debug("Testing: caller");
+  pvm_debug("Testing: caller");
   uint8_t caller[20];
-  env_caller(&caller[0]);
+  pvm_caller(&caller[0]);
   if (caller[19] == 0x03) {
-    env_debug("Test[v]: caller");
+    pvm_debug("Test[v]: caller");
   } else {
-    env_debug("Test[x]: caller");
+    pvm_debug("Test[x]: caller");
   }
 
-  env_debug("Testing: callvalue");
+  pvm_debug("Testing: callvalue");
   uint8_t callvalue[32];
-  env_callvalue(&callvalue[0]);
+  pvm_callvalue(&callvalue[0]);
   if (callvalue[31] == 5) {
-    env_debug("Test[v]: callvalue");
+    pvm_debug("Test[v]: callvalue");
   } else {
-    env_debug("Test[x]: callvalue");
+    pvm_debug("Test[x]: callvalue");
   }
 
-  env_debug("Testing: block hash");
+  pvm_debug("Testing: block hash");
   uint8_t block_hash[32];
-  env_blockhash(7, &block_hash[0]);
+  pvm_blockhash(7, &block_hash[0]);
   if (block_hash[31] == 7) {
-    env_debug("Test[v]: block hash");
+    pvm_debug("Test[v]: block hash");
   } else {
-    env_debug("Test[x]: block hash");
+    pvm_debug("Test[x]: block hash");
   }
 
-  env_debug("Testing: coinbase");
+  pvm_debug("Testing: coinbase");
   uint8_t coinbase[20];
-  env_coinbase(&coinbase[0]);
+  pvm_coinbase(&coinbase[0]);
   if (coinbase[19] == 0x08) {
-    env_debug("Test[v]: coinbase");
+    pvm_debug("Test[v]: coinbase");
   } else {
-    env_debug("Test[x]: coinbase");
+    pvm_debug("Test[x]: coinbase");
   }
 
-  env_debug("Testing: timestamp");
+  pvm_debug("Testing: timestamp");
   uint64_t timestamp;
-  env_timestamp(&timestamp);
+  pvm_timestamp(&timestamp);
   if (timestamp == 0x09) {
-    env_debug("Test[v]: timestamp");
+    pvm_debug("Test[v]: timestamp");
   } else {
-    env_debug("Test[x]: timestamp");
+    pvm_debug("Test[x]: timestamp");
   }
 
-  env_debug("Testing: number");
+  pvm_debug("Testing: number");
   uint8_t number[32];
-  env_number(&number[0]);
+  pvm_number(&number[0]);
   if (number[31] == 0x06) {
-    env_debug("Test[v]: number");
+    pvm_debug("Test[v]: number");
   } else {
-    env_debug("Test[x]: number");
+    pvm_debug("Test[x]: number");
   }
 
-  env_debug("Testing: difficulty");
+  pvm_debug("Testing: difficulty");
   uint8_t difficulty[32];
-  env_difficulty(&difficulty[0]);
+  pvm_difficulty(&difficulty[0]);
   if (difficulty[31] == 0x0a) {
-    env_debug("Test[v]: difficulty");
+    pvm_debug("Test[v]: difficulty");
   } else {
-    env_debug("Test[x]: difficulty");
+    pvm_debug("Test[x]: difficulty");
   }
 
   return 0;

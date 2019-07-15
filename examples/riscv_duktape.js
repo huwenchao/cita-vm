@@ -1,102 +1,102 @@
-env.debug('Testing: env.debug')
-env.debug('Test[v]: env.debug')
+pvm.debug('Testing: pvm.debug')
+pvm.debug('Test[v]: pvm.debug')
 
-env.debug('Testing: env.ret')
+pvm.debug('Testing: pvm.ret')
 var buffer_ret = new Buffer([0x54, 0x65, 0x73, 0x74, 0x3a, 0x20, 0x65, 0x6e, 0x76, 0x2e, 0x72, 0x65, 0x74])
-env.ret(buffer_ret)
-env.debug('Test[v]: env.ret')
+pvm.ret(buffer_ret)
+pvm.debug('Test[v]: pvm.ret')
 
-env.debug('Testing: env.save/env.load')
+pvm.debug('Testing: pvm.save/pvm.load')
 var buffer_k = new Buffer([0x65, 0x6e, 0x76, 0x2e, 0x6b])
 var buffer_v = new Buffer([0x65, 0x6e, 0x76, 0x2e, 0x76])
-env.save(buffer_k, buffer_v)
+pvm.save(buffer_k, buffer_v)
 
-var r = env.load(buffer_k)
+var r = pvm.load(buffer_k)
 if (r.subarray(0, 5)[4] == buffer_v[4]) {
-    env.debug('Test[v]: env.save/env.load')
+    pvm.debug('Test[v]: pvm.save/pvm.load')
 } else {
-    env.debug('Test[x]: env.save/env.load')
+    pvm.debug('Test[x]: pvm.save/pvm.load')
 }
 
-env.debug('Testing: env.address')
-var addr = env.address()
+pvm.debug('Testing: pvm.address')
+var addr = pvm.address()
 if (addr[19] == 0x01) {
-    env.debug('Test[v]: env.address')
+    pvm.debug('Test[v]: pvm.address')
 } else {
-    env.debug('Test[x]: env.address')
+    pvm.debug('Test[x]: pvm.address')
 }
 
-env.debug('Testing: env.balance')
+pvm.debug('Testing: pvm.balance')
 var acc1 = new Buffer([
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01]);
-var v = env.balance(acc1)
+var v = pvm.balance(acc1)
 if (v[31] == 10) {
-    env.debug('Test[v]: env.balance')
+    pvm.debug('Test[v]: pvm.balance')
 } else {
-    env.debug('Test[x]: env.balance')
+    pvm.debug('Test[x]: pvm.balance')
 }
 
-env.debug('Testing: env.origin')
-var addr = env.origin()
+pvm.debug('Testing: pvm.origin')
+var addr = pvm.origin()
 if (addr[19] == 0x02) {
-    env.debug('Test[v]: env.origin')
+    pvm.debug('Test[v]: pvm.origin')
 } else {
-    env.debug('Test[x]: env.origin')
+    pvm.debug('Test[x]: pvm.origin')
 }
 
-env.debug('Testing: env.caller')
-var addr = env.caller()
+pvm.debug('Testing: pvm.caller')
+var addr = pvm.caller()
 if (addr[19] == 0x03) {
-    env.debug('Test[v]: env.caller')
+    pvm.debug('Test[v]: pvm.caller')
 } else {
-    env.debug('Test[x]: env.caller')
+    pvm.debug('Test[x]: pvm.caller')
 }
 
-env.debug('Testing: env.callvalue')
-var callvalue = env.callvalue()
+pvm.debug('Testing: pvm.callvalue')
+var callvalue = pvm.callvalue()
 if (callvalue[31] == 0x05) {
-    env.debug('Test[v]: env.callvalue')
+    pvm.debug('Test[v]: pvm.callvalue')
 } else {
-    env.debug('Test[x]: env.callvalue')
+    pvm.debug('Test[x]: pvm.callvalue')
 }
 
-env.debug('Testing: env.blockhash')
-var blockhash = env.blockhash(7)
+pvm.debug('Testing: pvm.blockhash')
+var blockhash = pvm.blockhash(7)
 if (blockhash[31] == 0x07) {
-    env.debug('Test[v]: env.blockhash')
+    pvm.debug('Test[v]: pvm.blockhash')
 } else {
-    env.debug('Test[x]: env.blockhash')
+    pvm.debug('Test[x]: pvm.blockhash')
 }
 
-env.debug('Testing: env.coinbase')
-var addr = env.coinbase()
+pvm.debug('Testing: pvm.coinbase')
+var addr = pvm.coinbase()
 if (addr[19] == 0x08) {
-    env.debug('Test[v]: env.coinbase')
+    pvm.debug('Test[v]: pvm.coinbase')
 } else {
-    env.debug('Test[x]: env.coinbase')
+    pvm.debug('Test[x]: pvm.coinbase')
 }
 
-env.debug('Testing: env.timestamp')
-var timestamp = env.timestamp()
+pvm.debug('Testing: pvm.timestamp')
+var timestamp = pvm.timestamp()
 if (timestamp == 0x09) {
-    env.debug('Test[v]: env.timestamp')
+    pvm.debug('Test[v]: pvm.timestamp')
 } else {
-    env.debug('Test[x]: env.timestamp')
+    pvm.debug('Test[x]: pvm.timestamp')
 }
 
-env.debug('Testing: env.number')
-var number = env.number()
+pvm.debug('Testing: pvm.number')
+var number = pvm.number()
 if (number[31] == 0x06) {
-    env.debug('Test[v]: env.number')
+    pvm.debug('Test[v]: pvm.number')
 } else {
-    env.debug('Test[x]: env.number')
+    pvm.debug('Test[x]: pvm.number')
 }
 
-env.debug('Testing: env.difficulty')
-var difficulty = env.difficulty()
+pvm.debug('Testing: pvm.difficulty')
+var difficulty = pvm.difficulty()
 if (difficulty[31] == 0x0a) {
-    env.debug('Test[v]: env.difficulty')
+    pvm.debug('Test[v]: pvm.difficulty')
 } else {
-    env.debug('Test[x]: env.difficulty')
+    pvm.debug('Test[x]: pvm.difficulty')
 }

@@ -596,15 +596,6 @@ fn reinterpret_tx<B: DB + 'static>(
     request
 }
 
-// pub fn exec_riscv<B: DB + 'static>(
-//     block_provider: Arc<BlockDataProvider>,
-//     state_provider: Arc<RefCell<state::State<B>>>,
-//     context: Context,
-//     config: Config,
-//     tx: Transaction,
-// ) -> Result<InterpreterResult, Error> {
-// }
-
 /// Execute the transaction from transaction pool
 pub fn exec<B: DB + 'static>(
     block_provider: Arc<BlockDataProvider>,

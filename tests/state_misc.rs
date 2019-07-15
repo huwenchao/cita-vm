@@ -15,7 +15,7 @@ fn test_state_misc00() {
         &Address::from("0x2000000000000000000000000000000000000000"),
         U256::from(100_000),
         U256::from(1),
-        hex::decode("").unwrap(),
+        vec![],
     );
     state.new_contract(
         &Address::from("0x1000000000000000000000000000000000000000"),
