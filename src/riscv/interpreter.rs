@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::fs;
 use std::rc::Rc;
 
 use bytes::Bytes;
@@ -6,7 +7,7 @@ use ckb_vm::machine::SupportMachine;
 
 use crate::evm::DataProvider;
 use crate::riscv;
-use crate::{Context, InterpreterParams, InterpreterResult};
+use crate::{Context, InterpreterParams, InterpreterResult, InterpreterType};
 
 pub struct Interpreter {
     pub context: Context,
@@ -24,15 +25,31 @@ impl Interpreter {
     }
 
     pub fn run(&mut self) -> Result<InterpreterResult, ckb_vm::Error> {
-        let code = Bytes::from(self.iparams.contract.code_data.clone());
-        let mut args: Vec<Bytes> = self
+        let contract_code = Bytes::from(self.iparams.contract.code_data.clone());
+        let contract_args: Vec<Bytes> = self
             .iparams
             .input
             .split(|e| *e == 0x00)
             .filter(|e| !e.is_empty())
             .map(Bytes::from)
             .collect();
-        args.insert(0, Bytes::from("main"));
+
+        let (code, args) = match self.iparams.itype {
+            InterpreterType::C => {
+                let code = contract_code.clone();
+                let mut args = contract_args.clone();
+                args.insert(0, Bytes::from("main"));
+                (code, args)
+            }
+            InterpreterType::JS => {
+                let code = Bytes::from(fs::read("./build/duktape").unwrap());
+                let mut args = contract_args.clone();
+                args.insert(0, contract_code.clone());
+                args.insert(0, Bytes::from("main"));
+                (code, args)
+            }
+            _ => unreachable!(),
+        };
 
         let ret_data = Rc::new(RefCell::new(Vec::new()));
         let core_machine =

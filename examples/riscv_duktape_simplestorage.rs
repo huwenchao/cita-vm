@@ -12,8 +12,8 @@ fn main() {
         nonce: U256::from(1),
         gas_limit: 1_000_000,
         gas_price: U256::from(1),
-        input: fs::read("./build/riscv_c_simplestorage").unwrap(),
-        itype: cita_vm::InterpreterType::C,
+        input: fs::read("./examples/riscv_duktape_simplestorage.js").unwrap(),
+        itype: cita_vm::InterpreterType::JS,
     };
     let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
     println!("{:?}", r);
@@ -27,7 +27,7 @@ fn main() {
         to: Some(contract_address),
         value: U256::from(0),
         nonce: U256::from(2),
-        gas_limit: 1_000_000,
+        gas_limit: 1_000_000_000,
         gas_price: U256::from(1),
         input: cita_vm::riscv::combine_parameters(
             vec!["set", "everything", "42"]
@@ -35,7 +35,7 @@ fn main() {
                 .map(|e| String::from(*e))
                 .collect(),
         ),
-        itype: cita_vm::InterpreterType::C,
+        itype: cita_vm::InterpreterType::JS,
     };
     let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
     println!("{:?}", r);
@@ -45,10 +45,10 @@ fn main() {
         to: Some(contract_address),
         value: U256::from(0),
         nonce: U256::from(3),
-        gas_limit: 1_000_000,
+        gas_limit: 1_000_000_000,
         gas_price: U256::from(1),
         input: cita_vm::riscv::combine_parameters(vec!["get", "everything"].iter().map(|e| String::from(*e)).collect()),
-        itype: cita_vm::InterpreterType::C,
+        itype: cita_vm::InterpreterType::JS,
     };
     let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
     println!("{:?}", r);

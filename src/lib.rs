@@ -17,5 +17,8 @@ pub mod riscv;
 pub mod state;
 pub use state::State;
 
+mod fake;
+pub use fake::FakeVM;
+
 mod structure;
 pub use structure::{Context, Contract, InterpreterParams, InterpreterResult, InterpreterType, Log, Transaction};

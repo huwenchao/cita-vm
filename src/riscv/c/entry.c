@@ -196,17 +196,20 @@ int main(int argc, char *argv[]) {
     strcat(s, ", ");
     strcat(s, "new Array(\"main\"");
     if (argc != 2) {
-        for (int i = 2; i < argc - 1; i++)
-        {
-            strcat(s, argv[i]);
-            strcat(s, ",");
-        }
-        strcat (s, argv[argc - 1]);
+      strcat(s, ", ");
+      for (int i = 2; i < argc - 1; i++)
+      {
+        strcat(s, "\"");
+        strcat(s, argv[i]);
+        strcat(s, "\", ");
+      }
+      strcat(s, "\"");
+      strcat (s, argv[argc - 1]);
+      strcat(s, "\"");
     }
     strcat(s, ")");
     strcat(s, ")");
 
-    pvm_debug(s);
     duk_eval_string(ctx, s);
     duk_pop(ctx);
   }
