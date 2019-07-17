@@ -55,9 +55,13 @@ int main(int argc, char* argv[]) {
 
 Contract allows return a byte array by function `pvm_ret`. You can stuff any data in it, as long as you are happy. But still recommend that you use some standards like use 8 bytes describe a uint64 number.
 
+```c
+int pvm_ret(uint8_t *data, size_t size);
+```
+
 # Error handling
 
-Like with C, returns a number that not equals with zero.
+Like with C, returns a number that not equals with zero means something went wrong.
 
 ```c
 #define ERROR_HAPPENED 1
@@ -83,6 +87,7 @@ Similar to C, isn't it?
 There are a global object named `pvm` that allows you play with the World State:
 
 ```js
+// Another data storage contract write by JS
 function main(argc, argv) {
     if (argv[1] == 'set') {
         var k = argv[2]
