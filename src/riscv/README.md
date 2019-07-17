@@ -1,6 +1,6 @@
 # RISCV Executor
 
-Similar to EVM, but using the RISCV instruction set. It uses EVM data structures (Tree, Account, e.g.).
+Similar to EVM, but using the RISCV instruction set.
 
 # RISCV Contract Model: C-Language
 
