@@ -73,6 +73,8 @@ int main(int argc, char* argv[]) {
 }
 ```
 
+You can add a extra message by `pvm_ret`.
+
 # RISCV Contract Model: JS-Language
 
 **Duktape** is used for interpret JS-Language contract. The minimal contract is like
