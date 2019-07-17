@@ -123,3 +123,20 @@ int pvm_gaslimit(uint64_t *gaslimit)
 ```
 
 or in JS's `pvm` object, just use `pvm.xxxxx` instead of `pvm_xxxxx`.
+
+# Data structure
+
+I am thinking about whether to add built-in types, such as **Address**, **Balance**, e.g. But for now, I use
+
+- Address: `[20]uint8_t`
+- Balance: `[32]uint8_t`, No build-in U256!
+
+The more advanced types maybe provided in the **develop toolchain**, but should not be in the vm layer.
+
+# Runtime Cost
+
+The gas cost table is copied from CKB.
+
+C-Language contract not much different from the EVM. But when calling JS contract, the most simple data storage contract cost **~7000000** gas(We can do a lot of optimization here).
+
+In addition, I recommend using C-Language to write the contract code.
