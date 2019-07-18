@@ -2,6 +2,20 @@
 
 Similar to EVM, but using the RISCV instruction set.
 
+```
++-----------------+      +------+
+| RISCV Interpter | <--> | EVM  |
++-----------------+      +------+
+     |
++------------------------+
+| Account model Storage  |
++------------------------+
+     |
++----------+
+|   MPT    |
++----------+
+```
+
 # RISCV Contract Model: C-Language
 
 C-Language contract is very simaliar with native binary program. The minimal contract is like this:
