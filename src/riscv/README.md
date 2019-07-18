@@ -153,7 +153,7 @@ The more advanced types maybe provided in the **develop toolchain**, but should 
 
 The gas cost table is copied from CKB.
 
-C-Language contract not much different from the EVM. If we don't consider about the gas cost for `set_storage` and `get_storage`, only `1708` and `1665` used in riscv vm.
+C-Language contract not much different from the EVM. If we don't consider about the gas cost for `set_storage` and `get_storage`, only `1708` and `1665` used in riscv vm(simplestorage contract's `set` and `get` function).
 
 But when calling JS contract, the most simple data storage contract cost **~7000000** gas(It's sure we can do a lot of optimization here, but still much bigger than C or EVM).
 
