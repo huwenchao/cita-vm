@@ -747,18 +747,12 @@ impl<B: DB + 'static> Executive<B> {
         )
     }
 
-    pub fn exec_static(
-        block_provider: Arc<BlockDataProvider>,
-        state_provider: state::State<B>,
-        context: Context,
-        config: Config,
-        tx: Transaction,
-    ) -> Result<InterpreterResult, Error> {
+    pub fn exec_static(&self, context: Context, tx: Transaction) -> Result<InterpreterResult, Error> {
         exec_static(
-            block_provider,
-            Arc::new(RefCell::new(state_provider)),
+            self.block_provider.clone(),
+            self.state_provider.clone(),
             context,
-            config,
+            self.config.clone(),
             tx,
         )
     }
