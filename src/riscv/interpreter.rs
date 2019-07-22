@@ -62,9 +62,16 @@ impl Interpreter {
         let exitcode = machine.run()?;
         let cycles = machine.cycles();
         if exitcode != 0x00 {
-            Ok(InterpreterResult::Revert(ret_data.borrow().to_vec(), cycles))
+            Ok(InterpreterResult::Revert(
+                ret_data.borrow().to_vec(),
+                self.iparams.gas_limit - cycles,
+            ))
         } else {
-            Ok(InterpreterResult::Normal(ret_data.borrow().to_vec(), cycles, vec![]))
+            Ok(InterpreterResult::Normal(
+                ret_data.borrow().to_vec(),
+                self.iparams.gas_limit - cycles,
+                vec![],
+            ))
         }
     }
 }
