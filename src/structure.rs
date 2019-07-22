@@ -3,7 +3,7 @@ use ethereum_types::{Address, H256, U256};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum InterpreterType {
     EVM,
-    C,
+    RISCV,
     JS,
 }
 

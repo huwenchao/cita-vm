@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::fs;
 use std::rc::Rc;
 
 use bytes::Bytes;
@@ -7,7 +6,7 @@ use ckb_vm::machine::SupportMachine;
 
 use crate::evm::DataProvider;
 use crate::riscv;
-use crate::{Context, InterpreterParams, InterpreterResult, InterpreterType};
+use crate::{Context, InterpreterParams, InterpreterResult};
 
 pub struct Interpreter {
     pub context: Context,
@@ -34,22 +33,9 @@ impl Interpreter {
             .map(Bytes::from)
             .collect();
 
-        let (code, args) = match self.iparams.itype {
-            InterpreterType::C => {
-                let code = contract_code.clone();
-                let mut args = contract_args.clone();
-                args.insert(0, Bytes::from("main"));
-                (code, args)
-            }
-            InterpreterType::JS => {
-                let code = Bytes::from(fs::read("./build/duktape").unwrap());
-                let mut args = contract_args.clone();
-                args.insert(0, contract_code.clone());
-                args.insert(0, Bytes::from("main"));
-                (code, args)
-            }
-            _ => unreachable!(),
-        };
+        let code = contract_code.clone();
+        let mut args = contract_args.clone();
+        args.insert(0, Bytes::from("main"));
 
         let ret_data = Rc::new(RefCell::new(Vec::new()));
         let core_machine =

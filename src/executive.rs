@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::fs;
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -384,45 +385,53 @@ fn call_pure<B: DB + 'static>(
     block_provider: Arc<BlockDataProvider>,
     state_provider: Arc<RefCell<state::State<B>>>,
     store: Arc<RefCell<Store>>,
-    request: &InterpreterParams,
+    iparams: &InterpreterParams,
 ) -> Result<InterpreterResult, Error> {
     let context = store.borrow().context.clone();
     let evm_cfg = store.borrow().cfg.clone();
-    let iparams = request.clone();
+    let mut iparams = iparams.clone();
     let data_provider = DataProvider::new(block_provider.clone(), state_provider.clone(), store.clone());
     // Transfer value
-    if !request.disable_transfer_value {
+    if !iparams.disable_transfer_value {
         state_provider
             .borrow_mut()
-            .transfer_balance(&request.sender, &request.receiver, request.value)?;
+            .transfer_balance(&iparams.sender, &iparams.receiver, iparams.value)?;
     }
     // Execute pre-compiled contracts.
-    if native::contains(&request.contract.code_address) {
-        let c = native::get(request.contract.code_address);
-        let gas = c.required_gas(&request.input);
-        if request.gas_limit < gas {
+    if native::contains(&iparams.contract.code_address) {
+        let c = native::get(iparams.contract.code_address);
+        let gas = c.required_gas(&iparams.input);
+        if iparams.gas_limit < gas {
             return Err(Error::Evm(evm::Error::OutOfGas));
         }
-        let r = c.run(&request.input);
+        let r = c.run(&iparams.input);
         match r {
             Ok(ok) => {
-                return Ok(InterpreterResult::Normal(ok, request.gas_limit - gas, vec![]));
+                return Ok(InterpreterResult::Normal(ok, iparams.gas_limit - gas, vec![]));
             }
             Err(e) => return Err(e.into()),
         }
     }
 
     // Run
-    match request.itype {
+    match iparams.itype {
         InterpreterType::EVM => {
             let mut it = evm::Interpreter::new(context, evm_cfg, Box::new(data_provider), iparams);
             Ok(it.run()?)
         }
-        InterpreterType::C => {
+        InterpreterType::RISCV => {
             let mut it = riscv::Interpreter::new(context, iparams, Rc::new(RefCell::new(data_provider)));
             Ok(it.run()?)
         }
         InterpreterType::JS => {
+            let duktape = fs::read("./build/duktape").unwrap();
+            let mut input = iparams.contract.code_data.clone();
+            input.push(0x00);
+            input.append(&mut iparams.input.clone());
+
+            iparams.contract.code_data = duktape;
+            iparams.input = input;
+
             let mut it = riscv::Interpreter::new(context, iparams, Rc::new(RefCell::new(data_provider)));
             Ok(it.run()?)
         }
