@@ -33,6 +33,12 @@ riscv/example/c_simplestorage:
 riscv/example/c_simplestorage/docker:
 	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/example/c_simplestorage"
 
+riscv/example/c_intf:
+	$(CC) -I./src/riscv/c/ -o ./build/riscv_c_intf ./examples/riscv_c_intf.c
+
+riscv/example/c_intf/docker:
+	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/example/c_intf"
+
 riscv/duktape:
 	$(CC) $(APP_CFLAGS) src/riscv/c/entry.c -c -o build/entry.o
 	$(CC) $(APP_CFLAGS) src/riscv/duktape/duktape.c -c -o build/duktape.o

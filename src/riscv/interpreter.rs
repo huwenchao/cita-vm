@@ -56,6 +56,7 @@ impl Interpreter {
                 self.iparams.address,
                 self.data_provider.clone(),
             )))
+            .syscall(Box::new(riscv::SyscallIntf::new()))
             .build();
 
         machine.load_program(&code, &args[..]).unwrap();

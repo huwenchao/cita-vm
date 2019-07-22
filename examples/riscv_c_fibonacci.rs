@@ -1,26 +1,13 @@
 use std::fs;
-use std::sync::Arc;
 
-use cita_trie;
 use cita_vm;
-use ethereum_types::{Address, U256};
+use ethereum_types::U256;
 
 fn main() {
-    let d = Arc::new(cita_trie::MemoryDB::new(false));
-    let mut state_provider = cita_vm::State::new(d).unwrap();
-    state_provider.new_contract(
-        &Address::from("0x1000000000000000000000000000000000000000"),
-        U256::from(100000000),
-        U256::from(1),
-        vec![],
-    );
-
-    let context = cita_vm::Context::default();
-    let cfg = cita_vm::Config::default();
-    let vm = cita_vm::Executive::new(Arc::new(cita_vm::BlockDataProviderMock::default()), state_provider, cfg);
+    let vm = cita_vm::FakeVM::new();
 
     let tx = cita_vm::Transaction {
-        from: Address::from("0x1000000000000000000000000000000000000000"),
+        from: vm.account1,
         to: None,
         value: U256::from(10),
         nonce: U256::from(1),
@@ -29,7 +16,7 @@ fn main() {
         input: fs::read("./build/riscv_c_fibonacci").unwrap(),
         itype: cita_vm::InterpreterType::RISCV,
     };
-    let r = vm.exec(context.clone(), tx).unwrap();
+    let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
     println!("{:?}", r);
     let (_, _, _, addr) = match r {
         cita_vm::InterpreterResult::Normal(_, _, _) => unreachable!(),
@@ -38,7 +25,7 @@ fn main() {
     };
 
     let tx = cita_vm::Transaction {
-        from: Address::from("0x1000000000000000000000000000000000000000"),
+        from: vm.account1,
         to: Some(addr),
         value: U256::from(10),
         nonce: U256::from(2),
@@ -47,6 +34,6 @@ fn main() {
         input: cita_vm::riscv::combine_parameters(vec!["10".into()]),
         itype: cita_vm::InterpreterType::RISCV,
     };
-    let r = vm.exec(context.clone(), tx).unwrap();
+    let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
     println!("{:?}", r);
 }
