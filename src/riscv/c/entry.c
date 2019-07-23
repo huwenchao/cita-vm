@@ -185,33 +185,42 @@ int main(int argc, char *argv[]) {
   duk_context *ctx = duk_create_heap_default();
   pvm_init(ctx);
 
-  uint8_t source[65536];
-  pvm_intf(&source[0], 65536, NULL);
-  duk_eval_string(ctx, (char *)source);
+//   uint8_t source[65536];
+//   pvm_intf(&source[0], 65536, NULL);
+//   pvm_debug((char *)source);
+//   duk_eval_string(ctx, (char *)source);
 
-  char s[1024];
-  strcpy(s, "main(");
-  itoa(argc - 1, &s[5], 10);
-  strcat(s, ", ");
-  strcat(s, "new Array(\"main\"");
-  if (argc != 2) {
+//   duk_pop(ctx);
+//   duk_destroy_heap(ctx);
+
+  if (argc == 1) {
+    return 1;
+  } else {
+    duk_eval_string(ctx, argv[1]);
+
+    char s[1024];
+    strcpy(s, "main(");
+    itoa(argc - 1, &s[5], 10);
     strcat(s, ", ");
-    for (int i = 2; i < argc - 1; i++)
-    {
-    strcat(s, "\"");
-    strcat(s, argv[i]);
-    strcat(s, "\", ");
+    strcat(s, "new Array(\"main\"");
+    if (argc != 2) {
+      strcat(s, ", ");
+      for (int i = 2; i < argc - 1; i++)
+      {
+        strcat(s, "\"");
+        strcat(s, argv[i]);
+        strcat(s, "\", ");
+      }
+      strcat(s, "\"");
+      strcat (s, argv[argc - 1]);
+      strcat(s, "\"");
     }
-    strcat(s, "\"");
-    strcat (s, argv[argc - 1]);
-    strcat(s, "\"");
+    strcat(s, ")");
+    strcat(s, ")");
+
+    duk_eval_string(ctx, s);
+    duk_pop(ctx);
   }
-  strcat(s, ")");
-  strcat(s, ")");
-
-  duk_eval_string(ctx, s);
-  duk_pop(ctx);
-
   duk_destroy_heap(ctx);
 
   return 0;
