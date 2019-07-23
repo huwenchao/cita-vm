@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::fs;
 use std::io::Read;
 use std::rc::Rc;
 
@@ -9,7 +10,7 @@ use hashbrown::HashMap;
 
 fn main() {
     // Load binary
-    let mut file = std::fs::File::open("./build/riscv_c_sdk").unwrap();
+    let mut file = fs::File::open("./build/riscv_c_sdk").unwrap();
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer).unwrap();
     let buffer: Bytes = buffer.into();

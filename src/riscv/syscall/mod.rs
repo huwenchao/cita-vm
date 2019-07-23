@@ -9,7 +9,7 @@ mod environment;
 pub use environment::SyscallEnvironment;
 
 mod intf;
-pub use intf::SyscallIntf;
+pub use intf::{Snapshot, SyscallIntf};
 
 mod ret;
 pub use ret::SyscallRet;

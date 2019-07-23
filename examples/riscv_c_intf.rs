@@ -1,42 +1,28 @@
+use std::cell::RefCell;
 use std::fs;
-use std::sync::Arc;
+use std::io::Read;
+use std::rc::Rc;
 
-use cita_trie;
+use bytes::Bytes;
 use cita_vm;
-use ethereum_types::{Address, U256};
 
 fn main() {
+    // Load binary
+    let mut file = fs::File::open("./build/riscv_c_intf").unwrap();
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer).unwrap();
+    let buffer: Bytes = buffer.into();
 
-    // let vm = cita_vm::Executive::new(Arc::new(cita_vm::BlockDataProviderMock::default()), state_provider, cfg);
+    let snapshot = Rc::new(RefCell::new(cita_vm::riscv::Snapshot::new()));
+    let mut machine =
+        ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>>::default()
+            .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
+            .syscall(Box::new(cita_vm::riscv::SyscallIntf::new(snapshot.clone())))
+            .build();
 
-    // let tx = cita_vm::Transaction {
-    //     from: Address::from("0x1000000000000000000000000000000000000000"),
-    //     to: None,
-    //     value: U256::from(10),
-    //     nonce: U256::from(1),
-    //     gas_limit: 1000000,
-    //     gas_price: U256::from(1),
-    //     input: fs::read("./build/riscv_c_fibonacci").unwrap(),
-    //     itype: cita_vm::InterpreterType::RISCV,
-    // };
-    // let r = vm.exec(context.clone(), tx).unwrap();
-    // println!("{:?}", r);
-    // let (_, _, _, addr) = match r {
-    //     cita_vm::InterpreterResult::Normal(_, _, _) => unreachable!(),
-    //     cita_vm::InterpreterResult::Revert(_, _) => unreachable!(),
-    //     cita_vm::InterpreterResult::Create(a, b, c, d) => (a, b, c, d),
-    // };
+    machine.load_program(&buffer, &vec!["riscv_c_main".into()]).unwrap();
+    let result = machine.run().unwrap();
 
-    // let tx = cita_vm::Transaction {
-    //     from: Address::from("0x1000000000000000000000000000000000000000"),
-    //     to: Some(addr),
-    //     value: U256::from(10),
-    //     nonce: U256::from(2),
-    //     gas_limit: 1000000,
-    //     gas_price: U256::from(1),
-    //     input: cita_vm::riscv::combine_parameters(vec!["10".into()]),
-    //     itype: cita_vm::InterpreterType::RISCV,
-    // };
-    // let r = vm.exec(context.clone(), tx).unwrap();
-    // println!("{:?}", r);
+    println!("snapshot={:?}", snapshot.borrow().registers);
+    println!("exit={:#02x}", result);
 }
