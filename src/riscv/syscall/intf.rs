@@ -9,7 +9,7 @@ use crate::riscv::syscall::convention::SYSCODE_INTF;
 pub struct Snapshot<R> {
     pub pc: R,
     pub registers: Vec<R>,
-    pub memory: Vec<u64>,
+    pub memory: Vec<u8>,
 }
 
 impl<R: ckb_vm::Register> Snapshot<R> {
@@ -19,6 +19,12 @@ impl<R: ckb_vm::Register> Snapshot<R> {
             registers: vec![],
             memory: vec![],
         }
+    }
+}
+
+impl<R: ckb_vm::Register> Default for Snapshot<R> {
+    fn default() -> Self {
+        Snapshot::new()
     }
 }
 
@@ -48,8 +54,8 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallIntf {
             self.snapshot.borrow_mut().registers.push(e.to_u64());
         }
         for i in 0..ckb_vm::RISCV_MAX_MEMORY {
-            let a = machine.memory_mut().load64(&Mac::REG::from_usize(i)).unwrap();
-            self.snapshot.borrow_mut().memory.push(a.to_u64());
+            let a = machine.memory_mut().load8(&Mac::REG::from_usize(i)).unwrap();
+            self.snapshot.borrow_mut().memory.push(a.to_u8());
         }
 
         let addr = machine.registers()[ckb_vm::registers::A0].to_usize();
