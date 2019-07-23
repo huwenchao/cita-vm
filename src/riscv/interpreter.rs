@@ -41,9 +41,9 @@ impl Interpreter {
 
         let ret_data = Rc::new(RefCell::new(Vec::new()));
         let core_machine =
-            ckb_vm::DefaultCoreMachine::<u64, ckb_vm::SparseMemory<u64>>::new_with_max_cycles(self.iparams.gas_limit);
+            ckb_vm::DefaultCoreMachine::<u64, ckb_vm::FlatMemory<u64>>::new_with_max_cycles(self.iparams.gas_limit);
         let mut machine =
-            ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>>::new(
+            ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::FlatMemory<u64>>>::new(
                 core_machine,
             )
             .instruction_cycle_func(Box::new(riscv::cost_model::instruction_cycles))

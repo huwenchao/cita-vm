@@ -24,5 +24,13 @@ fn main() {
     let result = machine.run().unwrap();
 
     println!("snapshot={:?}", snapshot.borrow().registers);
+    println!("memory_size={:?}", snapshot.borrow().memory.len());
+
+    let mut machine =
+        ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>>::default()
+            .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
+            .syscall(Box::new(cita_vm::riscv::SyscallIntf::new(snapshot.clone())))
+            .build();
+
     println!("exit={:#02x}", result);
 }
