@@ -7,6 +7,7 @@ use ckb_vm::memory::Memory;
 use crate::riscv::syscall::convention::SYSCODE_INTF;
 
 pub struct Snapshot<R> {
+    pub pc: R,
     pub registers: Vec<R>,
     pub memory: Vec<u8>,
 }
@@ -14,6 +15,7 @@ pub struct Snapshot<R> {
 impl<R: ckb_vm::Register> Snapshot<R> {
     pub fn new() -> Self {
         Self {
+            pc: R::from_u8(0),
             registers: vec![],
             memory: vec![],
         }
@@ -41,6 +43,7 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallIntf {
             return Ok(false);
         }
 
+        self.snapshot.borrow_mut().pc = machine.pc().to_u64();
         for e in machine.registers() {
             self.snapshot.borrow_mut().registers.push(e.to_u64());
         }
