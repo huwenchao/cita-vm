@@ -31,6 +31,13 @@ fn main() {
             .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
             .syscall(Box::new(cita_vm::riscv::SyscallIntf::new(snapshot.clone())))
             .build();
-
+    machine.set_register(0, 0);
+    for i in 1..32 {
+        machine.set_register(i, snapshot.borrow().registers[i]);
+    }
+    for i in 0..ckb_vm::RISCV_MAX_MEMORY {
+        machine.memory_mut().store64(i, snapshot.borrow().memory[i]);
+    }
+    let result = machine.run().unwrap();
     println!("exit={:#02x}", result);
 }
