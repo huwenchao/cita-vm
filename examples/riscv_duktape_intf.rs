@@ -93,7 +93,6 @@ fn main() {
     let r_size_addr = machine.registers()[ckb_vm::registers::A2].to_usize();
 
     let src = fs::read("./examples/riscv_duktape.js").unwrap();
-
     machine.memory_mut().store_bytes(addr, &src).unwrap();
     machine
         .memory_mut()
