@@ -57,14 +57,7 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallIntf {
             let a = machine.memory_mut().load8(&Mac::REG::from_usize(i)).unwrap();
             self.snapshot.borrow_mut().memory.push(a.to_u8());
         }
-
-        let addr = machine.registers()[ckb_vm::registers::A0].to_usize();
-        let size = machine.registers()[ckb_vm::registers::A1].to_usize();
-        let r_size_addr = machine.registers()[ckb_vm::registers::A2].to_usize();
         machine.set_register(ckb_vm::registers::A0, Mac::REG::from_u8(0));
-
-        println!("Intf: addr={:?} size={:?} r_size_addr={:?}", addr, size, r_size_addr);
-
         Ok(true)
     }
 }
