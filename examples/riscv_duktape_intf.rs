@@ -21,13 +21,13 @@ fn main() {
     let snapshot = Rc::new(RefCell::new(cita_vm::riscv::Snapshot::new()));
     let mut machine =
         ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::FlatMemory<u64>>>::default()
-            .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
             .syscall(Box::new(cita_vm::riscv::SyscallIntf::new(snapshot.clone())))
             .build();
 
     machine.load_program(&buffer, &vec!["riscv_c_main".into()]).unwrap();
     let _ = machine.run().unwrap();
-    println!("snapshot={:?}", snapshot.borrow().registers);
+    println!("pc={:?}", snapshot.borrow().pc);
+    println!("resigters={:?}", snapshot.borrow().registers);
     println!("memory_size={:?}", snapshot.borrow().memory.len());
 
     // Initialize ret data
@@ -62,6 +62,7 @@ fn main() {
 
     let mut machine =
         ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::FlatMemory<u64>>>::default()
+            .instruction_cycle_func(Box::new(cita_vm::riscv::instruction_cycles))
             .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
             .syscall(Box::new(cita_vm::riscv::SyscallEnvironment::new(
                 vm_context.clone(),
