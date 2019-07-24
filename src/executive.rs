@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::fs;
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -389,7 +388,7 @@ fn call_pure<B: DB + 'static>(
 ) -> Result<InterpreterResult, Error> {
     let context = store.borrow().context.clone();
     let evm_cfg = store.borrow().cfg.clone();
-    let mut iparams = iparams.clone();
+    let iparams = iparams.clone();
     let data_provider = DataProvider::new(block_provider.clone(), state_provider.clone(), store.clone());
     // Transfer value
     if !iparams.disable_transfer_value {
@@ -424,15 +423,9 @@ fn call_pure<B: DB + 'static>(
             Ok(it.run()?)
         }
         InterpreterType::JS => {
-            let duktape = fs::read("./build/duktape").unwrap();
-            let mut input = iparams.contract.code_data.clone();
-            input.push(0x00);
-            input.append(&mut iparams.input.clone());
-
-            iparams.contract.code_data = duktape;
-            iparams.input = input;
-
-            let mut it = riscv::Interpreter::new(context, iparams, Rc::new(RefCell::new(data_provider)));
+            let snapshot = riscv::get_duktape_snapshot("./build/duktape");
+            let mut it =
+                riscv::InterpreterJS::new(context, iparams, Rc::new(RefCell::new(data_provider)), snapshot.clone());
             Ok(it.run()?)
         }
     }

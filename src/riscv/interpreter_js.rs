@@ -27,6 +27,32 @@ pub fn get_duktape_snapshot(bin: impl AsRef<Path>) -> Rc<RefCell<Snapshot<u64>>>
     snapshot
 }
 
+fn get_main(args: Vec<String>) -> String {
+    let mut s = String::new();
+    s.push_str("main(");
+
+    let argc = args.len();
+    let argc_s: String = (argc + 1).to_string();
+    s.push_str(argc_s.as_str());
+    s.push_str(", ");
+    s.push_str("new Array(\"main\"");
+
+    if argc != 0 {
+        s.push_str(", ");
+        for e in args.iter().take(argc - 1) {
+            s.push_str("\"");
+            s.push_str(e.as_str());
+            s.push_str("\", ");
+        }
+        s.push_str("\"");
+        s.push_str(args[argc - 1].as_str());
+        s.push_str("\"");
+    }
+    s.push_str(")");
+    s.push_str(")");
+    s
+}
+
 pub struct InterpreterJS {
     pub context: Context,
     pub iparams: InterpreterParams,
@@ -87,7 +113,19 @@ impl InterpreterJS {
         let _ = machine.registers()[ckb_vm::registers::A1].to_usize();
         let r_size_addr = machine.registers()[ckb_vm::registers::A2].to_usize();
 
-        let src = self.iparams.contract.code_data.clone();
+        let mut src = self.iparams.contract.code_data.clone();
+        src.push(b'\n');
+
+        let contract_args: Vec<String> = self
+            .iparams
+            .input
+            .split(|e| *e == 0x00)
+            .filter(|e| !e.is_empty())
+            .map(|e| String::from_utf8(e.to_vec()).unwrap_or_else(|_| "".into()))
+            .collect();
+        let main = get_main(contract_args);
+        src.append(&mut main.as_bytes().to_vec());
+
         machine.memory_mut().store_bytes(addr, &src).unwrap();
         machine
             .memory_mut()
