@@ -6,8 +6,10 @@ use std::rc::Rc;
 use bytes::Bytes;
 use cita_vm;
 use ckb_vm::machine::CoreMachine;
+use ckb_vm::machine::SupportMachine;
 use ckb_vm::memory::Memory;
 use ckb_vm::Register;
+use hashbrown::HashMap;
 
 fn main() {
     // Load binary
@@ -28,35 +30,75 @@ fn main() {
     println!("snapshot={:?}", snapshot.borrow().registers);
     println!("memory_size={:?}", snapshot.borrow().memory.len());
 
-    // let mut machine =
-    //     ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::FlatMemory<u64>>>::default()
-    //         .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
-    //         .syscall(Box::new(cita_vm::riscv::SyscallIntf::new(snapshot.clone())))
-    //         .build();
+    // Initialize ret data
+    let ret_data = Rc::new(RefCell::new(Vec::new()));
 
-    // machine.set_pc(snapshot.borrow().pc + 4);
-    // machine.set_register(0, 0);
-    // for i in 1..32 {
-    //     machine.set_register(i, snapshot.borrow().registers[i]);
-    // }
-    // for i in 0..ckb_vm::RISCV_MAX_MEMORY {
-    //     machine
-    //         .memory_mut()
-    //         .store8(&(i as u64), &u64::from(snapshot.borrow().memory[i]))
-    //         .unwrap();
-    // }
+    // Initialize params
+    let mut vm_params = cita_vm::InterpreterParams::default();
+    vm_params.address = ethereum_types::Address::from("0x0000000000000000000000000000000000000001");
+    vm_params.origin = ethereum_types::Address::from("0x0000000000000000000000000000000000000002");
+    vm_params.sender = ethereum_types::Address::from("0x0000000000000000000000000000000000000003");
+    vm_params.value = ethereum_types::U256::from(5);
 
-    // let addr = machine.registers()[ckb_vm::registers::A0].to_usize();
-    // let _ = machine.registers()[ckb_vm::registers::A1].to_usize();
-    // let r_size_addr = machine.registers()[ckb_vm::registers::A2].to_usize();
+    // Initialize context
+    let mut vm_context = cita_vm::Context::default();
+    vm_context.number = ethereum_types::U256::from(6);
+    vm_context.coinbase = ethereum_types::Address::from("0x0000000000000000000000000000000000000008");
+    vm_context.timestamp = 9;
+    vm_context.difficulty = ethereum_types::U256::from(0x0a);
 
-    // let r = String::from("Hello World!");
-    // machine.memory_mut().store_bytes(addr, r.as_bytes()).unwrap();
-    // machine
-    //     .memory_mut()
-    //     .store_bytes(r_size_addr, &12u64.to_le_bytes()[..])
-    //     .unwrap();
+    // Initialize storage
+    let state = Rc::new(RefCell::new(cita_vm::evm::extmock::DataProviderMock::default()));
+    let acc1 = ethereum_types::Address::from("0x0000000000000000000000000000000000000001");
+    state.borrow_mut().db.insert(
+        acc1,
+        cita_vm::evm::extmock::Account {
+            balance: ethereum_types::U256::from(10),
+            code: vec![],
+            nonce: ethereum_types::U256::from(0),
+            storage: HashMap::new(),
+        },
+    );
 
-    // let result = machine.run().unwrap();
-    // println!("exit={:#02x}", result);
+    let mut machine =
+        ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::FlatMemory<u64>>>::default()
+            .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
+            .syscall(Box::new(cita_vm::riscv::SyscallEnvironment::new(
+                vm_context.clone(),
+                vm_params.clone(),
+                state.clone(),
+            )))
+            .syscall(Box::new(cita_vm::riscv::SyscallRet::new(ret_data.clone())))
+            .syscall(Box::new(cita_vm::riscv::SyscallStorage::new(
+                vm_params.address.clone(),
+                state.clone(),
+            )))
+            .build();
+
+    machine.set_pc(snapshot.borrow().pc + 4);
+    machine.set_register(0, 0);
+    for i in 1..32 {
+        machine.set_register(i, snapshot.borrow().registers[i]);
+    }
+    for i in 0..ckb_vm::RISCV_MAX_MEMORY {
+        machine
+            .memory_mut()
+            .store8(&(i as u64), &u64::from(snapshot.borrow().memory[i]))
+            .unwrap();
+    }
+
+    let addr = machine.registers()[ckb_vm::registers::A0].to_usize();
+    let _ = machine.registers()[ckb_vm::registers::A1].to_usize();
+    let r_size_addr = machine.registers()[ckb_vm::registers::A2].to_usize();
+
+    let src = fs::read("./examples/riscv_duktape.js").unwrap();
+
+    // let r = String::from("pvm.debug(\"Hello World!\")");
+    machine.memory_mut().store_bytes(addr, &src).unwrap();
+    machine
+        .memory_mut()
+        .store_bytes(r_size_addr, &src.len().to_le_bytes()[..])
+        .unwrap();
+    let result = machine.run().unwrap();
+    println!("exit={:#02x} cycles={:?}", result, machine.cycles());
 }
