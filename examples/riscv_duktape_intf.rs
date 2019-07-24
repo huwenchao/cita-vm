@@ -93,7 +93,6 @@ fn main() {
 
     let src = fs::read("./examples/riscv_duktape.js").unwrap();
 
-    // let r = String::from("pvm.debug(\"Hello World!\")");
     machine.memory_mut().store_bytes(addr, &src).unwrap();
     machine
         .memory_mut()

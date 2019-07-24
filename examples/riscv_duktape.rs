@@ -64,5 +64,10 @@ fn main() {
 
     machine.load_program(&buffer, &vec!["duktape".into(), js]).unwrap();
     let result = machine.run().unwrap();
-    println!("exit={:#02x} ret={:?} cycles={:?}", result, ret_data.borrow(), machine.cycles());
+    println!(
+        "exit={:#02x} ret={:?} cycles={:?}",
+        result,
+        ret_data.borrow(),
+        machine.cycles()
+    );
 }
