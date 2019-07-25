@@ -4,7 +4,6 @@ use ethereum_types::{Address, H256, U256};
 pub enum InterpreterType {
     EVM,
     RISCV,
-    JS,
 }
 
 impl Default for InterpreterType {

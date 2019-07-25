@@ -6,6 +6,7 @@ use std::rc::Rc;
 use bytes::Bytes;
 use cita_vm;
 use ckb_vm;
+use ckb_vm::machine::SupportMachine;
 use hashbrown::HashMap;
 
 fn main() {
@@ -47,6 +48,7 @@ fn main() {
 
     let mut machine =
         ckb_vm::DefaultMachineBuilder::<ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>>::default()
+            .instruction_cycle_func(Box::new(cita_vm::riscv::instruction_cycles))
             .syscall(Box::new(cita_vm::riscv::SyscallDebug::new("riscv:", std::io::stdout())))
             .syscall(Box::new(cita_vm::riscv::SyscallEnvironment::new(
                 vm_context.clone(),
@@ -62,5 +64,10 @@ fn main() {
 
     machine.load_program(&buffer, &vec!["riscv_c_main".into()]).unwrap();
     let result = machine.run().unwrap();
-    println!("exit={:#02x} ret={:?}", result, ret_data.borrow());
+    println!(
+        "exit={:#02x} ret={:?} cycles={:?}",
+        result,
+        ret_data.borrow(),
+        machine.cycles()
+    );
 }
