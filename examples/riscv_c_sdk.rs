@@ -11,10 +11,7 @@ use hashbrown::HashMap;
 
 fn main() {
     // Load binary
-    let mut file = fs::File::open("./build/riscv_c_sdk").unwrap();
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer).unwrap();
-    let buffer: Bytes = buffer.into();
+    let buffer = Bytes::from(fs::read("./build/riscv_c_sdk").unwrap());
 
     // Initialize ret data
     let ret_data = Rc::new(RefCell::new(Vec::new()));

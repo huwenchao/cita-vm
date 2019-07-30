@@ -13,35 +13,27 @@ LD := $(TARGET)-gcc
 CFLAGS := -Os -DCKB_NO_MMU -D__riscv_soft_float -D__riscv_float_abi_soft
 LDFLAGS := -lm -Wl,-static -fdata-sections -ffunction-sections -Wl,--gc-sections -Wl,-s
 CURRENT_DIR := $(shell pwd)
+DOCKER_BUILD := docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c
 
-riscv/example/c_sdk:
+riscv/example/raw:
 	$(CC) -I./src/riscv/c/ -o ./build/riscv_c_sdk ./examples/riscv_c_sdk.c
-
-riscv/example/c_sdk/docker:
-	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/example/c_sdk"
-
-riscv/example/c_fibonacci:
 	$(CC) -I./src/riscv/c/ -o ./build/riscv_c_fibonacci ./examples/riscv_c_fibonacci.c
-
-riscv/example/c_fibonacci/docker:
-	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/example/c_fibonacci"
-
-riscv/example/c_simplestorage:
 	$(CC) -I./src/riscv/c/ -o ./build/riscv_c_simplestorage ./examples/riscv_c_simplestorage.c
 
-riscv/example/c_simplestorage/docker:
-	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/example/c_simplestorage"
+riscv/example:
+	$(DOCKER_BUILD) "cd /src && make riscv/example/raw"
 
-riscv/example/c_intf:
-	$(CC) -I./src/riscv/c/ -o ./build/riscv_c_intf ./examples/riscv_c_intf.c
+riscv/tests/raw:
+	$(CC) -I./src/riscv/c/ -o ./build/tests/exit_0 ./tests/c/exit_0.c
+	$(CC) -I./src/riscv/c/ -o ./build/tests/exit_1 ./tests/c/exit_1.c
 
-riscv/example/c_intf/docker:
-	docker run -v $(CURRENT_DIR):/src nervos/ckb-riscv-gnu-toolchain:bionic bash -c "cd /src && make riscv/example/c_intf"
+riscv/tests:
+	$(DOCKER_BUILD) "cd /src && make riscv/tests/raw"
 
-riscv/all: riscv/example/c_sdk/docker \
-	riscv/example/c_fibonacci/docker \
-	riscv/example/c_simplestorage/docker
+riscv/all: riscv/example \
+	riscv/tests
 
 .PHONY: \
+	evm/testdata \
 	riscv/all \
 	ci
