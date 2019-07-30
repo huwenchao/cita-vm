@@ -10,4 +10,5 @@ Cargo.lock
 **/*.rs.bk
 
 __pycache__/
+/build/
 /.vscode
