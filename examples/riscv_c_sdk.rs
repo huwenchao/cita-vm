@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::fs;
-use std::io::Read;
 use std::rc::Rc;
 
 use bytes::Bytes;

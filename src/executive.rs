@@ -319,7 +319,7 @@ pub fn can_create<B: DB + 'static>(
 // for input data. If is_create, another G_CREATE gas required.
 //
 // gas_prepare = 21000 + (68 or 4 per byte) + (32000 if tx.to == 0)
-pub fn get_gas_prepare(request: &InterpreterParams) -> u64 {
+fn get_gas_prepare(request: &InterpreterParams) -> u64 {
     let mut gas_prepare: u64 = 0;
     gas_prepare += G_TRANSACTION;
     if request.is_create {
@@ -336,7 +336,7 @@ pub fn get_gas_prepare(request: &InterpreterParams) -> u64 {
 }
 
 /// Function get_refund returns the real ammount to refund for a transaction.
-pub fn get_refund(store: Arc<RefCell<Store>>, request: &InterpreterParams, gas_left: u64) -> u64 {
+fn get_refund(store: Arc<RefCell<Store>>, request: &InterpreterParams, gas_left: u64) -> u64 {
     let refunds_bound = match store.borrow().refund.get(&request.origin) {
         Some(&data) => data,
         None => 0u64,
@@ -346,7 +346,7 @@ pub fn get_refund(store: Arc<RefCell<Store>>, request: &InterpreterParams, gas_l
 }
 
 /// Liquidtion for a transaction.
-pub fn clear<B: DB + 'static>(
+fn clear<B: DB + 'static>(
     state_provider: Arc<RefCell<state::State<B>>>,
     store: Arc<RefCell<Store>>,
     request: &InterpreterParams,
@@ -570,29 +570,29 @@ fn reinterpret_tx<B: DB + 'static>(
     tx: Transaction,
     state_provider: Arc<RefCell<state::State<B>>>,
 ) -> InterpreterParams {
-    let mut request = InterpreterParams::default();
-    request.origin = tx.from;
-    request.sender = tx.from;
+    let mut iparams = InterpreterParams::default();
+    iparams.origin = tx.from;
+    iparams.sender = tx.from;
     match tx.to {
         Some(data) => {
-            request.receiver = data;
-            request.address = data;
-            request.contract = Contract {
+            iparams.receiver = data;
+            iparams.address = data;
+            iparams.contract = Contract {
                 code_address: data,
                 code_data: state_provider.borrow_mut().code(&data).unwrap_or_default(),
             };
         }
         None => {
-            request.is_create = true;
+            iparams.is_create = true;
         }
     }
-    request.gas_price = tx.gas_price;
-    request.gas_limit = tx.gas_limit;
-    request.value = tx.value;
-    request.input = tx.input;
-    request.nonce = tx.nonce;
-    request.itype = tx.itype;
-    request
+    iparams.gas_price = tx.gas_price;
+    iparams.gas_limit = tx.gas_limit;
+    iparams.value = tx.value;
+    iparams.input = tx.input;
+    iparams.nonce = tx.nonce;
+    iparams.itype = tx.itype;
+    iparams
 }
 
 pub struct Executive<B> {
