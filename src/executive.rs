@@ -595,129 +595,6 @@ fn reinterpret_tx<B: DB + 'static>(
     request
 }
 
-/// Execute the transaction from transaction pool
-pub fn exec<B: DB + 'static>(
-    block_provider: Arc<BlockDataProvider>,
-    state_provider: Arc<RefCell<state::State<B>>>,
-    context: Context,
-    config: Config,
-    tx: Transaction,
-) -> Result<InterpreterResult, Error> {
-    let request = &reinterpret_tx(tx, state_provider.clone());
-    // Ensure gas < block_gas_limit
-    if config.block_gas_limit > G_TRANSACTION && request.gas_limit > config.block_gas_limit {
-        return Err(Error::ExccedMaxBlockGasLimit);
-    }
-    if config.check_nonce {
-        // Ensure nonce
-        if request.nonce != state_provider.borrow_mut().nonce(&request.sender)? {
-            return Err(Error::InvalidNonce);
-        }
-    }
-    // Ensure gas
-    let gas_prepare = get_gas_prepare(request);
-    if request.gas_limit < gas_prepare {
-        return Err(Error::NotEnoughBaseGas);
-    }
-    // Ensure value
-    let gas_prepay = request.gas_price * request.gas_limit;
-    if state_provider.borrow_mut().balance(&request.sender)? < gas_prepay + request.value {
-        return Err(Error::NotEnoughBalance);
-    }
-    // Pay intrinsic gas
-    state_provider.borrow_mut().sub_balance(&request.sender, gas_prepay)?;
-    // Increament the nonce for the next transaction
-    state_provider.borrow_mut().inc_nonce(&request.sender)?;
-    // Init the store for the transaction
-    let mut store = Store::default();
-    store.cfg = get_interpreter_conf();
-    store.context = context.clone();
-    store.used(request.receiver);
-    let store = Arc::new(RefCell::new(store));
-    // Create a sub request
-    let mut reqchan = request.clone();
-    reqchan.gas_limit = request.gas_limit - gas_prepare;
-    let r = if request.is_create {
-        create(
-            block_provider.clone(),
-            state_provider.clone(),
-            store.clone(),
-            &reqchan,
-            CreateKind::FromAddressAndNonce,
-        )
-    } else {
-        call(block_provider.clone(), state_provider.clone(), store.clone(), &reqchan)
-    };
-    // Finalize
-    log::debug!("exec result={:?}", r);
-    match r {
-        Ok(InterpreterResult::Normal(output, gas_left, logs)) => {
-            log::debug!("exec gas_left={:?}", gas_left);
-            let refund = get_refund(store.clone(), &request, gas_left);
-            log::debug!("exec refund={:?}", refund);
-            clear(state_provider.clone(), store.clone(), &request, gas_left, refund)?;
-            // Handle self destruct: Kill it.
-            // Note: must after ends of the transaction.
-            for e in store.borrow_mut().selfdestruct.drain() {
-                state_provider.borrow_mut().kill_contract(&e)
-            }
-            state_provider.borrow_mut().kill_garbage(&store.borrow().inused.clone());
-            Ok(InterpreterResult::Normal(output, gas_left, logs))
-        }
-        Ok(InterpreterResult::Revert(output, gas_left)) => {
-            log::debug!("exec gas_left={:?}", gas_left);
-            clear(state_provider.clone(), store.clone(), &request, gas_left, 0)?;
-            state_provider.borrow_mut().kill_garbage(&store.borrow().inused.clone());
-            Ok(InterpreterResult::Revert(output, gas_left))
-        }
-        Ok(InterpreterResult::Create(output, gas_left, logs, addr)) => {
-            log::debug!("exec gas_left={:?}", gas_left);
-            let refund = get_refund(store.clone(), &request, gas_left);
-            log::debug!("exec refund={:?}", refund);
-            clear(state_provider.clone(), store.clone(), &request, gas_left, refund)?;
-            for e in store.borrow_mut().selfdestruct.drain() {
-                state_provider.borrow_mut().kill_contract(&e)
-            }
-            state_provider.borrow_mut().kill_garbage(&store.borrow().inused.clone());
-            Ok(InterpreterResult::Create(output, gas_left, logs, addr))
-        }
-        Err(e) => {
-            // When error, coinbase eats all gas as it's price, yummy.
-            clear(state_provider.clone(), store.clone(), &request, 0, 0)?;
-            state_provider.borrow_mut().kill_garbage(&store.borrow().inused.clone());
-            Err(e)
-        }
-    }
-}
-
-/// Handle the call request in read only mode.
-/// Note:
-///   1) tx.to shouldn't be none
-///   2) tx.nonce is just omited
-///   3) tx.value must be 0. This is due to solidity's check.
-///
-/// This function is similar with `exec`, but all check & checkpoints are removed.
-#[allow(unused_variables)]
-pub fn exec_static<B: DB + 'static>(
-    block_provider: Arc<BlockDataProvider>,
-    state_provider: Arc<RefCell<state::State<B>>>,
-    evm_context: Context,
-    config: Config,
-    tx: Transaction,
-) -> Result<InterpreterResult, Error> {
-    if tx.to.is_none() {
-        return Err(Error::CreateInStaticCall);
-    }
-    let mut request = reinterpret_tx(tx, state_provider.clone());
-    request.read_only = true;
-    request.disable_transfer_value = true;
-    let mut store = Store::default();
-    store.cfg = get_interpreter_conf();
-    store.context = evm_context.clone();
-    let store = Arc::new(RefCell::new(store));
-    call_pure(block_provider.clone(), state_provider.clone(), store.clone(), &request)
-}
-
 pub struct Executive<B> {
     pub block_provider: Arc<BlockDataProvider>,
     pub state_provider: Arc<RefCell<state::State<B>>>,
@@ -734,22 +611,131 @@ impl<B: DB + 'static> Executive<B> {
     }
 
     pub fn exec(&self, context: Context, tx: Transaction) -> Result<InterpreterResult, Error> {
-        exec(
-            self.block_provider.clone(),
-            self.state_provider.clone(),
-            context,
-            self.config.clone(),
-            tx,
-        )
+        let iparams = &reinterpret_tx(tx, self.state_provider.clone());
+        // Ensure gas < block_gas_limit
+        if self.config.block_gas_limit > G_TRANSACTION && iparams.gas_limit > self.config.block_gas_limit {
+            return Err(Error::ExccedMaxBlockGasLimit);
+        }
+        if self.config.check_nonce {
+            // Ensure nonce
+            if iparams.nonce != self.state_provider.borrow_mut().nonce(&iparams.sender)? {
+                return Err(Error::InvalidNonce);
+            }
+        }
+        // Ensure gas
+        let gas_prepare = get_gas_prepare(iparams);
+        if iparams.gas_limit < gas_prepare {
+            return Err(Error::NotEnoughBaseGas);
+        }
+        // Ensure value
+        let gas_prepay = iparams.gas_price * iparams.gas_limit;
+        if self.state_provider.borrow_mut().balance(&iparams.sender)? < gas_prepay + iparams.value {
+            return Err(Error::NotEnoughBalance);
+        }
+        // Pay intrinsic gas
+        self.state_provider
+            .borrow_mut()
+            .sub_balance(&iparams.sender, gas_prepay)?;
+        // Increament the nonce for the next transaction
+        self.state_provider.borrow_mut().inc_nonce(&iparams.sender)?;
+        // Init the store for the transaction
+        let mut store = Store::default();
+        store.cfg = get_interpreter_conf();
+        store.context = context.clone();
+        store.used(iparams.receiver);
+        let store = Arc::new(RefCell::new(store));
+        // Create a sub request
+        let mut jparams = iparams.clone();
+        jparams.gas_limit = iparams.gas_limit - gas_prepare;
+        let r = if iparams.is_create {
+            create(
+                self.block_provider.clone(),
+                self.state_provider.clone(),
+                store.clone(),
+                &jparams,
+                CreateKind::FromAddressAndNonce,
+            )
+        } else {
+            call(
+                self.block_provider.clone(),
+                self.state_provider.clone(),
+                store.clone(),
+                &jparams,
+            )
+        };
+        // Finalize
+        log::debug!("exec result={:?}", r);
+        match r {
+            Ok(InterpreterResult::Normal(output, gas_left, logs)) => {
+                log::debug!("exec gas_left={:?}", gas_left);
+                let refund = get_refund(store.clone(), &iparams, gas_left);
+                log::debug!("exec refund={:?}", refund);
+                clear(self.state_provider.clone(), store.clone(), &iparams, gas_left, refund)?;
+                // Handle self destruct: Kill it.
+                // Note: must after ends of the transaction.
+                for e in store.borrow_mut().selfdestruct.drain() {
+                    self.state_provider.borrow_mut().kill_contract(&e)
+                }
+                self.state_provider
+                    .borrow_mut()
+                    .kill_garbage(&store.borrow().inused.clone());
+                Ok(InterpreterResult::Normal(output, gas_left, logs))
+            }
+            Ok(InterpreterResult::Revert(output, gas_left)) => {
+                log::debug!("exec gas_left={:?}", gas_left);
+                clear(self.state_provider.clone(), store.clone(), &iparams, gas_left, 0)?;
+                self.state_provider
+                    .borrow_mut()
+                    .kill_garbage(&store.borrow().inused.clone());
+                Ok(InterpreterResult::Revert(output, gas_left))
+            }
+            Ok(InterpreterResult::Create(output, gas_left, logs, addr)) => {
+                log::debug!("exec gas_left={:?}", gas_left);
+                let refund = get_refund(store.clone(), &iparams, gas_left);
+                log::debug!("exec refund={:?}", refund);
+                clear(self.state_provider.clone(), store.clone(), &iparams, gas_left, refund)?;
+                for e in store.borrow_mut().selfdestruct.drain() {
+                    self.state_provider.borrow_mut().kill_contract(&e)
+                }
+                self.state_provider
+                    .borrow_mut()
+                    .kill_garbage(&store.borrow().inused.clone());
+                Ok(InterpreterResult::Create(output, gas_left, logs, addr))
+            }
+            Err(e) => {
+                // When error, coinbase eats all gas as it's price, yummy.
+                clear(self.state_provider.clone(), store.clone(), &iparams, 0, 0)?;
+                self.state_provider
+                    .borrow_mut()
+                    .kill_garbage(&store.borrow().inused.clone());
+                Err(e)
+            }
+        }
     }
 
+    /// Handle the call request in read only mode.
+    /// Note:
+    ///   1) tx.to shouldn't be none
+    ///   2) tx.nonce is just omited
+    ///   3) tx.value must be 0. This is due to solidity's check.
+    ///
+    /// This function is similar with `exec`, but all check & checkpoints are removed.
     pub fn exec_static(&self, context: Context, tx: Transaction) -> Result<InterpreterResult, Error> {
-        exec_static(
+        if tx.to.is_none() {
+            return Err(Error::CreateInStaticCall);
+        }
+        let mut iparams = reinterpret_tx(tx, self.state_provider.clone());
+        iparams.read_only = true;
+        iparams.disable_transfer_value = true;
+        let mut store = Store::default();
+        store.cfg = get_interpreter_conf();
+        store.context = context.clone();
+        let store = Arc::new(RefCell::new(store));
+        call_pure(
             self.block_provider.clone(),
             self.state_provider.clone(),
-            context,
-            self.config.clone(),
-            tx,
+            store.clone(),
+            &iparams,
         )
     }
 

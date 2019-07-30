@@ -6,9 +6,7 @@ pub use err::Error;
 pub mod evm;
 
 mod executive;
-pub use executive::{
-    exec, exec_static, BlockDataProvider, BlockDataProviderMock, Config, CreateKind, DataProvider, Executive, Store,
-};
+pub use executive::{BlockDataProvider, BlockDataProviderMock, Config, CreateKind, DataProvider, Executive, Store};
 
 pub mod json_tests;
 
