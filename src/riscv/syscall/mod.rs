@@ -8,9 +8,6 @@ pub use debug::SyscallDebug;
 mod environment;
 pub use environment::SyscallEnvironment;
 
-mod intf;
-pub use intf::{Snapshot, SyscallIntf};
-
 mod ret;
 pub use ret::SyscallRet;
 

@@ -401,7 +401,7 @@ fn call_pure<B: DB + 'static>(
         let c = native::get(iparams.contract.code_address);
         let gas = c.required_gas(&iparams.input);
         if iparams.gas_limit < gas {
-            return Err(Error::Evm(evm::Error::OutOfGas));
+            return Err(Error::EVM(evm::Error::OutOfGas));
         }
         let r = c.run(&iparams.input);
         match r {
@@ -532,7 +532,7 @@ fn create<B: DB + 'static>(
             let gas_code_deposit: u64 = G_CODE_DEPOSIT * output.len() as u64;
             if gas_left < gas_code_deposit {
                 state_provider.borrow_mut().revert_checkpoint();
-                return Err(Error::Evm(evm::Error::OutOfGas));
+                return Err(Error::EVM(evm::Error::OutOfGas));
             }
             let gas_left = gas_left - gas_code_deposit;
             state_provider.borrow_mut().set_code(&address, output.clone())?;

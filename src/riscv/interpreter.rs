@@ -12,7 +12,6 @@ pub struct Interpreter {
     pub context: Context,
     pub iparams: InterpreterParams,
     pub data_provider: Rc<RefCell<DataProvider>>,
-    pub snapshot: Rc<RefCell<riscv::Snapshot<u64>>>,
 }
 
 impl Interpreter {
@@ -21,7 +20,6 @@ impl Interpreter {
             context,
             iparams,
             data_provider,
-            snapshot: Rc::new(RefCell::new(riscv::Snapshot::new())),
         }
     }
 
@@ -58,7 +56,6 @@ impl Interpreter {
                 self.iparams.address,
                 self.data_provider.clone(),
             )))
-            .syscall(Box::new(riscv::SyscallIntf::new(self.snapshot.clone())))
             .build();
 
         machine.load_program(&code, &args[..]).unwrap();
