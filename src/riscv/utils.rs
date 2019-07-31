@@ -16,16 +16,19 @@ pub fn cutting_parameters(args: Vec<u8>) -> Vec<Vec<u8>> {
     let mut i = 0;
     let mut r: Vec<Vec<u8>> = Vec::new();
     loop {
-        if i + 2 >= l {
+        if i + 2 > l {
             return r;
         }
         let mut n_byte = [0x00u8; 2];
         n_byte.copy_from_slice(&args[i..i + 2]);
         i += 2;
+
         let n = u16::from_be_bytes(n_byte) as usize;
-        if i + n as usize >= l {
+        if i + n as usize > l {
             return r;
         }
+
         r.push(args[i..i + n].to_vec());
+        i += n;
     }
 }

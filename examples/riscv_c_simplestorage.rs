@@ -29,12 +29,7 @@ fn main() {
         nonce: U256::from(2),
         gas_limit: 1_000_000,
         gas_price: U256::from(1),
-        input: cita_vm::riscv::combine_parameters(
-            vec!["set", "everything", "42"]
-                .iter()
-                .map(|e| String::from(*e))
-                .collect(),
-        ),
+        input: cita_vm::riscv::combine_parameters(vec!["set".into(), "everything".into(), "42".into()]),
         itype: cita_vm::InterpreterType::RISCV,
     };
     let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
@@ -47,7 +42,7 @@ fn main() {
         nonce: U256::from(3),
         gas_limit: 1_000_000,
         gas_price: U256::from(1),
-        input: cita_vm::riscv::combine_parameters(vec!["get", "everything"].iter().map(|e| String::from(*e)).collect()),
+        input: cita_vm::riscv::combine_parameters(vec!["get".into(), "everything".into()]),
         itype: cita_vm::InterpreterType::RISCV,
     };
     let r = vm.executor.exec(cita_vm::Context::default(), tx).unwrap();
