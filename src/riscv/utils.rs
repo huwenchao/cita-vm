@@ -26,6 +26,6 @@ pub fn cutting_parameters(args: Vec<u8>) -> Vec<Vec<u8>> {
         if i + n as usize >= l {
             return r;
         }
-        r.push(args[l..l + n].to_vec());
+        r.push(args[i..i + n].to_vec());
     }
 }
