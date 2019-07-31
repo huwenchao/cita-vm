@@ -25,12 +25,10 @@ impl Interpreter {
 
     pub fn run(&mut self) -> Result<InterpreterResult, ckb_vm::Error> {
         let contract_code = Bytes::from(self.iparams.contract.code_data.clone());
-        let contract_args: Vec<Bytes> = self
-            .iparams
-            .input
-            .split(|e| *e == 0x00)
-            .filter(|e| !e.is_empty())
-            .map(Bytes::from)
+        let contract_args: Vec<Bytes> = riscv::cutting_parameters(self.iparams.input.clone())
+            .as_slice()
+            .iter()
+            .map(|e| Bytes::from(e.clone()))
             .collect();
 
         let code = contract_code.clone();
