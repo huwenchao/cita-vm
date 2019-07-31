@@ -15,8 +15,8 @@ int main(int argc, char* argv[]) {
     uint8_t *k = (uint8_t *)argv[2];
     uint8_t v[8];
     pvm_load(&k[0], strlen(k), &v[0], 8, NULL);
-    uint64_t r = pvm_decode_u64(&v[0]);
-    pvm_ret_u64(r);
+    uint64_t v64 = *v;
+    pvm_ret_u64(v64);
     return 0;
   }
 
@@ -25,9 +25,8 @@ int main(int argc, char* argv[]) {
       return 1;
     }
     uint8_t *k = (uint8_t *)argv[2];
-    uint8_t v[8];
-    pvm_encode_u64(&v[0], atoi(argv[3]));
-    pvm_save(&k[0], strlen(k), &v[0], 8);
+    uint64_t v = atoi(argv[3]);
+    pvm_save(&k[0], strlen(k), (uint8_t*)&v, 8);
     return 0;
   }
   return 0;
