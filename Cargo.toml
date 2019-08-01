@@ -31,6 +31,7 @@ rayon = "1.0"
 
 [dev-dependencies]
 bencher = "0.1"
+rand = "0.7"
 
 [[bench]]
 name = "benchmark"
